@@ -16,8 +16,8 @@ Lead-generation web app for an Australian metal roofing contractor. Homeowners e
 
 - [x] Scaffolding, env setup, landing page with address autocomplete
 - [x] `/preview` page displaying a Nearmap aerial view of the chosen address
-- [ ] Roof segmentation (SAM 2 via Replicate)
-- [ ] Colorbond colour picker + recolour
+- [x] Roof segmentation (SAM 2 via Replicate) — auto-mask + click filter
+- [x] Colorbond colour picker + multiply-blend recolour
 - [ ] Lead form → Supabase + Resend
 
 ## Getting started
@@ -36,7 +36,10 @@ Lead-generation web app for an Australian metal roofing contractor. Homeowners e
 
 - **Address flow** — homepage has an autocomplete (AU-restricted, `types: address`). On selection we resolve coords via Places Details and push `/preview?lat=…&lng=…&address=…&placeId=…`.
 - **Aerial display** — `/preview` renders a MapLibre GL map centred on the address. Tiles are fetched from `/api/nearmap/[z]/[x]/[y]`, which forwards to Nearmap's `v3/Vert` tile endpoint server-side so the key never reaches the browser.
-- **Why MapLibre over a static image** — we'll need direct access to map pixels (via the WebGL canvas) for the segmentation step.
+- **Why MapLibre over a static image** — we need direct access to map pixels (via the WebGL canvas) for segmentation. Map is initialised with `preserveDrawingBuffer: true` so `getCanvas().toDataURL()` works.
+- **Segmentation** — user clicks the roof → we snapshot the map canvas (capped at 1280px longest edge) → POST to `/api/segment` → Replicate creates a SAM 2 prediction. Client polls `/api/segment/[id]?x=…&y=…` and the server picks the smallest returned mask whose pixel at the click contains roof (using `sharp`). One mask comes back to the client.
+- **Why auto-mask + filter, not click-prompts** — `meta/sam-2` on Replicate only wraps `SAM2AutomaticMaskGenerator`; the point-promptable `SAM2ImagePredictor` isn't exposed. Auto-mask + server-side click filter is the standard workaround (confirmed in multiple production integrations).
+- **Recolouring** — once the mask is on the client, colour swaps are local: we build a binary alpha array once, then for each Colorbond choice we multiply-blend the tint RGB over the aerial pixels where alpha is set. No further API calls.
 
 ## Deployment
 
