@@ -52,14 +52,13 @@ export default async function PreviewPage({
           </div>
 
           <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-            <RoofEditor lat={latNum} lng={lngNum} />
+            <RoofEditor
+              lat={latNum}
+              lng={lngNum}
+              address={address ?? ""}
+              placeId={placeId}
+            />
           </div>
-
-          {placeId && (
-            <p className="mt-4 text-[11px] text-muted-2">
-              Place ID: <span className="font-mono">{placeId}</span>
-            </p>
-          )}
         </div>
       </main>
     </div>

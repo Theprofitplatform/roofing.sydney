@@ -9,10 +9,13 @@ import {
   type ColorbondColour,
 } from "@/lib/colorbond";
 import { ColorbondPicker } from "@/components/colorbond-picker";
+import { LeadForm } from "@/components/lead-form";
 
 type Props = {
   lat: number;
   lng: number;
+  address: string;
+  placeId?: string;
 };
 
 type Status =
@@ -26,7 +29,7 @@ const MAX_CAPTURE_DIM = 1280;
 const POLL_INTERVAL_MS = 1500;
 const POLL_TIMEOUT_MS = 90_000;
 
-export function RoofEditor({ lat, lng }: Props) {
+export function RoofEditor({ lat, lng, address, placeId }: Props) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const displayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,9 +58,9 @@ export function RoofEditor({ lat, lng }: Props) {
           sources: {
             nearmap: {
               type: "raster",
-              tiles: [`${window.location.origin}/api/nearmap/{z}/{x}/{y}`],
+              tiles: [`${window.location.origin}/api/tiles/{z}/{x}/{y}`],
               tileSize: 256,
-              attribution: "© Nearmap",
+              attribution: "© Mapbox © Maxar",
               minzoom: 17,
               maxzoom: 22,
             },
@@ -283,12 +286,12 @@ export function RoofEditor({ lat, lng }: Props) {
       </div>
 
       {status.kind === "ready" && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-6">
           <ColorbondPicker
             selected={selected}
             onSelect={(c) => setSelected(c)}
           />
-          <div className="mt-5 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={reset}
@@ -297,6 +300,13 @@ export function RoofEditor({ lat, lng }: Props) {
               ← Pick a different spot
             </button>
           </div>
+          <LeadForm
+            address={address}
+            lat={lat}
+            lng={lng}
+            placeId={placeId}
+            colour={selected}
+          />
         </div>
       )}
     </div>
