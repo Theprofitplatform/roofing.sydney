@@ -14,7 +14,7 @@ const SELLING_POINTS = [
   "Site inspection within 5 working days",
   "Written fixed-price quote — no provisional sums",
   "Zero obligation, no deposit to quote",
-  "25-year workmanship warranty on paper",
+  "6-year workmanship warranty (25-year materials) on paper",
 ];
 
 export function QuoteBand() {
@@ -79,7 +79,7 @@ export function QuoteBand() {
             </h2>
             <p className="mt-5 text-sm leading-relaxed text-muted max-w-sm">
               Every quote includes a drone roof survey, fixed price, material breakdown,
-              project timeline and our 25-year workmanship warranty on paper.
+              project timeline and our 6-year workmanship warranty (25-year materials) on paper.
             </p>
             <ul className="mt-8 space-y-3">
               {SELLING_POINTS.map((p) => (
@@ -96,7 +96,7 @@ export function QuoteBand() {
                 href={`tel:${process.env.NEXT_PUBLIC_CONTACT_PHONE.replace(/[\s()]/g, "")}`}
                 className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-foreground underline-offset-2 hover:underline"
               >
-                Or call {process.env.NEXT_PUBLIC_CONTACT_PHONE} — answered 7 days
+                Or call {process.env.NEXT_PUBLIC_CONTACT_PHONE} — Mon–Fri 9am–4pm
               </a>
             )}
           </div>
@@ -111,7 +111,7 @@ export function QuoteBand() {
               </div>
               <h3 className="text-lg font-semibold text-foreground">Thanks — we&apos;ve got your details</h3>
               <p className="mt-2 max-w-xs text-sm text-muted">
-                A licensed metal roofer will call you within one business day to schedule a free on-site inspection.
+                A licensed metal roofer will call you within 48 hours to schedule a free on-site inspection.
               </p>
             </div>
           ) : (

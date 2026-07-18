@@ -16,8 +16,8 @@
   --ring: rgba(200, 68, 59, 0.25);
   --hero-bg-gradient: radial-gradient(ellipse at 65% 40%, #ede5d5 0%, #f5f0e8 65%);
   --hero-ink: #0b0f19;
-  --hero-ink-2: rgba(11, 15, 25, 0.6);
-  --hero-ink-3: rgba(11, 15, 25, 0.35);
+  --hero-ink-2: rgba(11, 15, 25, 0.78);
+  --hero-ink-3: rgba(11, 15, 25, 0.55);
   --hero-border: rgba(0, 0, 0, 0.1);
   --hero-surface: rgba(0, 0, 0, 0.03);
   --hero-button-bg: #0b0f19;
@@ -40,8 +40,8 @@
   --ring: rgba(200, 68, 59, 0.35);
   --hero-bg-gradient: radial-gradient(ellipse at 65% 40%, #1a2035 0%, #0b0f19 65%);
   --hero-ink: #f1faee;
-  --hero-ink-2: rgba(241, 250, 238, 0.6);
-  --hero-ink-3: rgba(241, 250, 238, 0.35);
+  --hero-ink-2: rgba(241, 250, 238, 0.72);
+  --hero-ink-3: rgba(241, 250, 238, 0.5);
   --hero-border: rgba(255, 255, 255, 0.1);
   --hero-surface: rgba(255, 255, 255, 0.05);
   --hero-button-bg: #f1faee;

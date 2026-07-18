@@ -2,10 +2,13 @@ const SERVICES = [
   "Colorbond re-roofing",
   "Leak detection & repairs",
   "Gutters & downpipes",
-  "Insurance claims",
+  "Standing seam (Copper/Zinc/Aluminium)",
+  "Commercial roofing",
 ];
 
 const COMPANY = [
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
   { label: "Colour AI", href: "/preview" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
@@ -25,8 +28,8 @@ export function SiteFooter() {
               <span className="text-sm font-semibold">Australian Roofing Contractors</span>
             </div>
             <p className="max-w-xs text-sm leading-relaxed opacity-50">
-              Premium metal roofing across Greater Sydney since 2008. Colorbond specialists,
-              leak repairs, gutters — and the AI colour visualiser you didn&apos;t know you needed.
+              Sydney metal roofing specialists since 2011. Colorbond &amp; standing seam re-roofing,
+              leak repairs and gutters — built for Australian conditions, friendly service from quote to handover.
             </p>
           </div>
 
@@ -51,6 +54,11 @@ export function SiteFooter() {
                   <a href={c.href} className="text-sm opacity-55 transition-opacity hover:opacity-90">{c.label}</a>
                 </li>
               ))}
+              <li>
+                <a href="mailto:info@roofing.sydney" className="text-sm opacity-55 transition-opacity hover:opacity-90">
+                  info@roofing.sydney
+                </a>
+              </li>
               {process.env.NEXT_PUBLIC_CONTACT_PHONE && (
                 <li>
                   <a
@@ -66,8 +74,8 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-14 flex flex-col gap-2 border-t pt-8 text-xs opacity-35 sm:flex-row sm:justify-between" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
-          <span>&copy; {new Date().getFullYear()} Australian Roofing Contractors &middot; NSW Lic. 324785C</span>
-          <span>ABN 82 645 218 904</span>
+          <span>&copy; {new Date().getFullYear()} Australian Roofing Contractors Pty Ltd &middot; NSW Fair Trading Lic. 245723C</span>
+          <span>ABN 59 148 109 399 &middot; ACN 148 109 399</span>
         </div>
       </div>
     </footer>

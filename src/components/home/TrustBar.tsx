@@ -1,10 +1,10 @@
 const CREDENTIALS = [
-  "NSW Fair Trading Licensed · 324785C",
-  "$20M Public Liability Insurance",
-  "Colorbond® Authorised Installer",
-  "MBA NSW Member",
-  "SafeWork NSW Certified",
-  "HIA Award · 2024",
+  "NSW Fair Trading Licensed · 245723C",
+  "Roof Plumbing Licence",
+  "BlueScope Colorbond® Accredited Installer",
+  "$20M Public Liability (Hollard)",
+  "NSW Home Warranty Insured",
+  "ABN 59 148 109 399",
 ];
 
 export function TrustBar() {
