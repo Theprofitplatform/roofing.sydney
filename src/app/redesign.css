@@ -11,6 +11,9 @@
   --accent: #f58719;
   --accent-dk: #d97207;
   --amber: #f9a04a;
+  /* AA-compliant orange for text/links on light backgrounds (~4.8:1 on white).
+     Bright --accent is reserved for large fills and decorative accents. */
+  --accent-text: #b35900;
 
   font-family: var(--font-barlow), sans-serif;
   background: var(--paper);
@@ -39,11 +42,11 @@
   margin: 0;
 }
 .arc a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
 }
 .arc a:hover {
-  color: var(--accent-dk);
+  color: var(--ink);
 }
 .arc .mono {
   font-family: var(--font-jetbrains), monospace;
@@ -61,7 +64,7 @@
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -82,7 +85,7 @@
 }
 .arc .h2 em {
   font-style: italic;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .arc .sub {
   color: var(--ink2);
@@ -105,11 +108,11 @@
 }
 .arc .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--ink);
 }
 .arc .btn-primary:hover {
   background: var(--accent-dk);
-  color: #fff;
+  color: var(--ink);
   transform: translateY(-1px);
 }
 .arc .btn-ghost {
@@ -166,7 +169,16 @@
   color: var(--accent);
 }
 .arc .navlinks a.btn {
-  color: #fff;
+  color: var(--ink);
+}
+/* mobile nav controls — hidden on desktop, shown ≤900px */
+.arc .navtoggle {
+  display: none;
+}
+.arc .navmobile {
+  display: none;
+  align-items: center;
+  gap: 12px;
 }
 
 /* hero */
@@ -341,7 +353,7 @@
   bottom: 22px;
   z-index: 3;
   background: var(--accent);
-  color: #fff;
+  color: var(--ink);
   border-radius: 6px;
   padding: 12px 18px;
   font-size: 14px;
@@ -509,7 +521,7 @@
 .arc .cardnum {
   font-family: var(--font-jetbrains), monospace;
   font-size: 12px;
-  color: var(--accent);
+  color: var(--accent-text);
   letter-spacing: 0.1em;
 }
 .arc .card h3 {
@@ -694,7 +706,7 @@
 }
 .arc .sent {
   background: var(--accent);
-  color: #fff;
+  color: var(--ink);
   border-radius: 8px;
   padding: 22px;
   text-align: center;
@@ -812,7 +824,74 @@
   .arc .frow {
     grid-template-columns: 1fr;
   }
+
+  /* --- mobile navigation --- */
+  .arc .navmobile {
+    display: flex;
+  }
+  .arc .navcta {
+    padding: 9px 18px;
+    font-size: 16px;
+  }
+  .arc .navtoggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 46px;
+    height: 44px;
+    padding: 0 11px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .arc .navtoggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .arc .navtoggle[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .arc .navtoggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+  .arc .navtoggle[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* slide-down menu panel */
   .arc .navlinks {
+    display: none;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 18px 34px rgba(9, 24, 38, 0.14);
+    padding: 6px 0 10px;
+  }
+  .arc .navlinks.open {
+    display: flex;
+  }
+  .arc .navlinks a {
+    padding: 15px 32px;
+    font-size: 17px;
+    border-bottom: 1px solid var(--line);
+  }
+  .arc .navlinks a:last-child {
+    border-bottom: none;
+  }
+  /* the in-menu Free quote is redundant with the persistent header CTA */
+  .arc .navlinks a.navlink-cta {
     display: none;
   }
 }

@@ -20,11 +20,11 @@ export const metadata: Metadata = {
     template: "%s — Australian Roofing Contractors",
   },
   description:
-    "Pick a Colorbond colour and see a realistic preview on your actual Sydney home. Free aerial visualisation, free quote, no obligation.",
+    "Pick a Colorbond colour and see it rendered across a real Sydney roof. Fixed-price quotes in writing within 48 hours — free, no obligation.",
   metadataBase: new URL("https://roofing.sydney"),
   openGraph: {
     title: "Australian Roofing Contractors — See your new Colorbond roof",
-    description: "Pick a colour. See it on your actual roof. Book a free quote.",
+    description: "Pick a colour. See it on a real roof. Book a free fixed-price quote.",
     type: "website",
   },
 };

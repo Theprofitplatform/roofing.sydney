@@ -1,6 +1,7 @@
 import "./redesign.css";
 import Link from "next/link";
 import { Barlow, Barlow_Condensed, JetBrains_Mono } from "next/font/google";
+import { SiteNav } from "@/components/home/SiteNav";
 import { HeroSlideshow } from "@/components/home/HeroSlideshow";
 import { HouseColourViz } from "@/components/home/HouseColourViz";
 import { QuoteForm } from "@/components/home/QuoteForm";
@@ -51,23 +52,7 @@ export default function Home() {
   return (
     <div className={`arc ${barlow.variable} ${barlowCondensed.variable} ${jetbrains.variable}`}>
       {/* nav */}
-      <nav>
-        <div className="wrap navin">
-          <a className="logo" href="#">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="logoimg" src="/images/logo.png" alt="ARC — Australian Roofing Contractors" />
-          </a>
-          <div className="navlinks">
-            <a href="#services">Services</a>
-            <a href="#visualiser">Colour visualiser</a>
-            <a href="#process">Process</a>
-            <a href="#areas">Service areas</a>
-            <a className="btn btn-primary" href="#quote" style={{ padding: "10px 22px", fontSize: 17 }}>
-              Free quote
-            </a>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* hero */}
       <header className="hero">
@@ -317,10 +302,10 @@ export default function Home() {
       <footer>
         <div className="wrap">
           <div>
-            <a className="logo" href="#" style={{ color: "#fff" }}>
+            <Link className="logo" href="/" aria-label="Australian Roofing Contractors — home" style={{ color: "#fff" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="logoimg" src="/images/logo.png" alt="ARC — Australian Roofing Contractors" />
-            </a>
+            </Link>
             <p style={{ marginTop: 18, maxWidth: 340 }}>
               Sydney metal roofing specialists since 2011. Colorbond® and standing seam
               re-roofing, leak repairs and gutters — friendly service from quote to handover.
@@ -350,7 +335,7 @@ export default function Home() {
             <h4>Company</h4>
             <ul>
               <li>
-                <Link href="/preview">Colour visualiser</Link>
+                <a href="#visualiser">Colour visualiser</a>
               </li>
               <li>
                 <a href="#process">Our process</a>

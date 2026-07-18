@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 type Swatch = { name: string; hex: string; img: string };
 
@@ -29,7 +28,7 @@ export function HouseColourViz() {
         </h2>
         <p className="sub">
           Choosing a roof colour from a tiny paint chip is a gamble. Tap a shade below and see it
-          on a whole roof — then preview it on satellite imagery of your actual home.
+          rendered across a whole roof — the full Colorbond range, on a real Sydney home.
         </p>
         <div className="swatches">
           {SWATCHES.map((s, i) => (
@@ -47,9 +46,9 @@ export function HouseColourViz() {
           ))}
         </div>
         <p style={{ marginTop: 26 }}>
-          <Link className="btn btn-primary" href="/preview">
-            Preview it on my home →
-          </Link>
+          <a className="btn btn-primary" href="#quote">
+            Get a colour-matched quote →
+          </a>
         </p>
       </div>
       <div className="house-stage house-stage--photo">

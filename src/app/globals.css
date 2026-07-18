@@ -69,7 +69,10 @@ html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  /* Explicit sans stack so unstyled/pre-hydration text never flashes serif
+     (var(--font-sans) can resolve empty before Tailwind's theme layer loads). */
+  font-family: var(--font-inter, ui-sans-serif), ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
