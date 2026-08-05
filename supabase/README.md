@@ -12,6 +12,11 @@ migrations/0004_libraries.sql     price book, snippets, templates, settings
 migrations/0005_operations.sql    jobs, variations
 migrations/0006_money.sql         invoices, payments
 migrations/0007_rls.sql           row level security for every table
+migrations/0008_portal.sql        portal view/accept/decline, tiers, extras
+migrations/0009_leverage.sql      revisions, price-book uplift, save-as-template
+migrations/0010_operations.sql    job creation, completion, variations, attachments
+migrations/0011_money.sql         invoice numbering, deposits, payment recording
+migrations/0012_intake.sql        public lead → client → opportunity
 seed.sql                          libraries + settings, from the prototype
 ```
 
@@ -49,6 +54,47 @@ Editing a snippet next year must not silently rewrite a quote sent last year.
 must be owner-supplied or professionally reviewed (e.g. against the Home
 Building Act). Never generated.
 
+## Storage
+
+One **private** bucket named `quotes` holds issued PDFs, site photos and job
+attachments:
+
+```
+<quote_id>/<quote_number>.pdf     issued quote artefact — written once
+<quote_id>/photos/<file>          site photos
+jobs/<job_id>/<file>              engineer's reports, colour sheets, warranties
+```
+
+Create it in the dashboard (Storage → New bucket → `quotes`, **not** public) or:
+
+```sql
+insert into storage.buckets (id, name, public) values ('quotes', 'quotes', false)
+on conflict (id) do nothing;
+```
+
+Leave it private and add no policies. Every read goes through the service role,
+which issues a short-lived signed URL — the client portal included. A public
+bucket would make every quote PDF enumerable by anyone who guessed a quote id,
+and a signed URL that never expires is a link that leaks.
+
+## Provisioning checklist
+
+1. Create the Supabase project (AU region — Sydney, `ap-southeast-2`).
+2. Apply `migrations/0001` → `0012` in order, then `seed.sql`.
+3. Create the private `quotes` bucket (above).
+4. Auth → Providers: enable **Email**, and turn OFF "Enable email signups" once
+   John's account exists. This is a single-operator tool; open signup on a magic
+   link means anyone who knows the URL can request one.
+5. Auth → URL Configuration: add `https://app.roofing.sydney/auth/callback` as a
+   redirect URL.
+6. Copy the project URL, anon key and service role key into the environment. The
+   two `NEXT_PUBLIC_*` values are **build args** for Docker; the service role key
+   is runtime-only and must never be a build arg — a build arg is recoverable
+   from the image's layer history.
+7. Sign in once. The `on_auth_user_created` trigger provisions the `public.users`
+   row; without it a session exists but `is_staff()` fails closed and every read
+   returns nothing.
+
 ## Testing
 
 ```bash
@@ -63,8 +109,17 @@ process — no Docker or server needed) and asserts:
 - issuing draws `Q-YYYY-NNNN`, and five concurrent issues never collide
 - editing an issued quote throws; drafts stay editable
 - accepting an expired quote throws; signature and status are written together
+- first view stamps `viewed_at`; a second view does not move it
+- revising an issued quote yields a v2 and supersedes the parent
+- a deposit invoice cannot be raised twice, and a retried Stripe reference cannot
+  be booked twice
+- `intake_lead` run twice yields one client and one opportunity
 - anon and non-staff sessions read nothing and write nothing, per table
 - readonly staff read but cannot write
+
+Tests run as the `anon` and `authenticated` roles with Supabase's grants
+applied. This matters: superusers bypass RLS unconditionally, so a policy test
+run as `postgres` passes vacuously and proves nothing.
 
 Two test-only accommodations, because PGlite is not Supabase:
 
@@ -73,13 +128,6 @@ Two test-only accommodations, because PGlite is not Supabase:
   Supabase has the real extension (`schema.sql` already depended on it).
   `gen_random_uuid()` needs no shim — it is core from PostgreSQL 13.
 
-Tests run as the `anon` and `authenticated` roles with Supabase's grants
-applied. This matters: superusers bypass RLS unconditionally, so a policy test
-run as `postgres` passes vacuously and proves nothing.
-
-## Still to wire up (later phases)
-
-- Storage buckets for quote PDFs and site photos (Phase 3)
-- `viewed_at` is written by the portal on first open (Phase 4). Until then it
-  stays null, and the follow-up nudge would flag every sent quote forever.
-- Lead → client → opportunity automation (Phase 5)
+The application layer is covered separately by `npm test`, which additionally
+exercises the calc engine, quote lifecycle flags, tier/extras scope resolution,
+the reporting aggregations, the PDF renderer and the Xero export.
