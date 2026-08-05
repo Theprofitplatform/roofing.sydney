@@ -58,6 +58,8 @@ export async function freshDb({ seed = true } = {}) {
   const db = await PGlite.create();
   await db.exec(AUTH_STUB);
   await db.exec(PGCRYPTO_SHIM);
+  // Before the migrations, so 0013's revokes land on roles that already exist.
+  await db.exec(SUPABASE_ROLES);
 
   const files = (await readdir(MIGRATIONS)).filter((f) => f.endsWith(".sql")).sort();
   for (const file of files) {
@@ -75,7 +77,7 @@ export async function freshDb({ seed = true } = {}) {
     await db.exec(await readFile(SEED, "utf8"));
   }
 
-  await db.exec(SUPABASE_ROLES);
+  await db.exec(SUPABASE_GRANTS);
 
   return db;
 }
@@ -83,11 +85,19 @@ export async function freshDb({ seed = true } = {}) {
 /**
  * Reproduces Supabase's role model so RLS can actually be exercised.
  *
- * Two things matter here. First, the default PGlite user is a superuser and
+ * Three things matter here. First, the default PGlite user is a superuser and
  * superusers bypass RLS unconditionally — testing as postgres proves nothing.
- * Second, Supabase grants anon/authenticated blanket table privileges and
- * relies on RLS alone to decide access; granting the same here means a passing
- * test reflects the POLICY, not a missing GRANT.
+ * Second, Supabase grants anon/authenticated blanket TABLE privileges and relies
+ * on RLS alone to decide access; granting the same here means a passing test
+ * reflects the POLICY, not a missing GRANT.
+ *
+ * Third — and this one was wrong until it was measured — the roles are created
+ * BEFORE the migrations run, and nothing here re-grants EXECUTE on functions.
+ * PostgreSQL already grants that to PUBLIC by default, which is exactly the
+ * exposure real Supabase has, so leaving it alone is what makes the revokes in
+ * 0013 both meaningful and testable. A blanket `grant execute on all functions`
+ * after the migrations would silently undo them and turn every privilege
+ * assertion into a test of this harness.
  */
 const SUPABASE_ROLES = `
   do $$
@@ -100,11 +110,13 @@ const SUPABASE_ROLES = `
     end if;
   end
   $$;
+`;
 
+/** Table privileges, applied after the migrations create the tables. */
+const SUPABASE_GRANTS = `
   grant usage on schema public to anon, authenticated;
   grant select, insert, update, delete on all tables in schema public to anon, authenticated;
   grant usage, select on all sequences in schema public to anon, authenticated;
-  grant execute on all functions in schema public to anon, authenticated;
 `;
 
 /**
