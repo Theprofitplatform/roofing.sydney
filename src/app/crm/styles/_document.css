@@ -1,0 +1,118 @@
+/* The A4 quote document — PDF preview and client portal share it.
+   Part of the CRM design system — see crm.css for the import order. */
+
+/* ============================================================
+   A4 quote document
+
+   Self-contained LIGHT theme regardless of the operator's OS setting —
+   it is a preview of a printed page and of what the client sees in the
+   portal, so it must not follow the CRM's dark mode.
+   ============================================================ */
+.crm .pdf {
+  --ink: #1a1d24;
+  --ink-soft: #5b616e;
+  --line: #e3e6ec;
+  --paper-accent: var(--brand);
+
+  /* Self-contained means re-anchoring the shell's tokens, not just setting a
+     white background. `.crm` flips --foreground and friends under
+     prefers-color-scheme, and those reach in through the generic element rules
+     — a `<p>` or an `<h2>` on the paper would paint near-white on white the
+     moment the operator's OS went dark. */
+  --foreground: var(--ink);
+  --muted-foreground: var(--ink-soft);
+  --border: var(--line);
+  --background: #ffffff;
+  --card: #ffffff;
+  --muted: #f0f2f6;
+
+  width: 794px; min-height: 1123px;
+  background: #ffffff; color: var(--ink);
+  font-family: var(--font-sans);
+  box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.6);
+  padding: 52px 56px;
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.crm .pdf__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 22px; border-bottom: 3px solid var(--paper-accent); }
+.crm .pdf-logo { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
+.crm .pdf-logo__mark { width: 48px; height: 48px; border-radius: 11px; background: linear-gradient(150deg, var(--brand), var(--brand-strong)); display: inline-flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+.crm .pdf-logo__name { font: 800 16px/1.18 var(--font-sans); letter-spacing: -0.01em; color: var(--ink); white-space: nowrap; }
+.crm .pdf-logo__name b { display: block; }
+.crm .pdf-logo__tag { font: 600 10px/1.2 var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-accent); margin-top: 5px; }
+.crm .pdf__org { text-align: right; font: 400 11px/1.7 var(--font-sans); color: var(--ink-soft); }
+.crm .pdf__org .lic { font-weight: 600; color: var(--ink); }
+
+.crm .pdf__title-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 26px; }
+.crm .pdf__title { font: 800 30px/1 var(--font-sans); letter-spacing: -0.02em; color: var(--ink); }
+.crm .pdf__meta { text-align: right; font: 400 12px/1.7 var(--font-sans); color: var(--ink-soft); }
+.crm .pdf__meta b { color: var(--ink); font-weight: 700; }
+
+.crm .pdf__parties { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 26px; }
+.crm .pdf__party-label { font: 700 9.5px/1 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-accent); margin-bottom: 8px; }
+.crm .pdf__party-name { font: 700 14px/1.3 var(--font-sans); color: var(--ink); }
+.crm .pdf__party-line { font: 400 12px/1.6 var(--font-sans); color: var(--ink-soft); }
+
+.crm .pdf__job { margin-top: 24px; padding: 14px 16px; background: #f6f8fb; border: 1px solid var(--line); border-radius: 8px; }
+.crm .pdf__job-grid { display: flex; gap: 36px; flex-wrap: wrap; }
+.crm .pdf__job-item .l { font: 700 9px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+.crm .pdf__job-item .v { font: 600 13px/1.3 var(--font-sans); color: var(--ink); margin-top: 5px; }
+.crm .pdf__job-note { margin-top: 10px; font: 400 12px/1.55 var(--font-sans); color: var(--ink-soft); }
+
+.crm .pdf-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+.crm .pdf-table caption { text-align: left; font: 700 10px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper-accent); padding: 14px 0 8px; }
+.crm .pdf-table th { text-align: left; font: 700 9.5px/1 var(--font-sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); padding: 0 0 8px; border-bottom: 1.5px solid var(--line); }
+.crm .pdf-table th.r, .crm .pdf-table td.r { text-align: right; }
+.crm .pdf-table td { padding: 9px 0; border-bottom: 1px solid var(--line); font: 400 12px/1.4 var(--font-sans); color: var(--ink); }
+.crm .pdf-table th + th, .crm .pdf-table td + td { padding-left: 16px; }
+.crm .pdf-table td .desc { font-weight: 500; }
+.crm .pdf-table .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+
+.crm .pdf__totals { margin-top: 18px; display: flex; justify-content: flex-end; }
+.crm .pdf__totals-inner { width: 280px; }
+.crm .pdf__total-row { display: flex; justify-content: space-between; padding: 7px 0; font: 400 12.5px/1 var(--font-sans); color: var(--ink-soft); }
+.crm .pdf__total-row .v { font-family: var(--font-mono); color: var(--ink); }
+.crm .pdf__total-grand { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding: 13px 16px; background: var(--paper-accent); border-radius: 8px; color: #fff; }
+.crm .pdf__total-grand .l { font: 700 13px/1 var(--font-sans); letter-spacing: 0.02em; }
+.crm .pdf__total-grand .v { font: 800 22px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
+.crm .pdf__single { margin-top: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+.crm .pdf__single .d { font: 600 13px/1.4 var(--font-sans); }
+
+.crm .pdf__clauses { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 26px; }
+.crm .pdf__clause-h { font: 700 9.5px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper-accent); margin-bottom: 9px; }
+.crm .pdf__clause-li { display: flex; gap: 8px; font: 400 11px/1.5 var(--font-sans); color: var(--ink-soft); margin-bottom: 7px; }
+.crm .pdf__clause-li [data-lucide] { flex-shrink: 0; margin-top: 1px; }
+.crm .pdf__clause-li.inc { color: #1a1d24; }
+
+.crm .pdf__foot { margin-top: auto; padding-top: 22px; }
+.crm .pdf__terms { font: 400 10.5px/1.55 var(--font-sans); color: var(--ink-soft); padding: 13px 15px; background: #f6f8fb; border-radius: 8px; border: 1px solid var(--line); }
+.crm .pdf__terms b { color: var(--ink); }
+.crm .pdf__accept { display: grid; grid-template-columns: 1.4fr 1fr 0.8fr; gap: 22px; margin-top: 22px; }
+.crm .pdf__accept-field .line { border-bottom: 1.5px solid var(--ink); height: 26px; }
+.crm .pdf__accept-field .l { font: 700 9px/1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-top: 7px; }
+.crm .pdf__accept-stmt { font: 600 10.5px/1.5 var(--font-sans); color: var(--ink); margin-top: 18px; }
+.crm .pdf__legal { text-align: center; font: 400 10px/1.4 var(--font-sans); color: #9aa0ac; margin-top: 26px; }
+
+.crm .pdf__stamp { position: absolute; top: 86px; right: 40px; transform: rotate(-11deg); font: 800 22px/1 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--status-success); border: 3px solid var(--status-success); border-radius: 8px; padding: 7px 14px; opacity: 0.82; }
+
+/* Modern layout — full-bleed accent band instead of the ruled header. */
+.crm .pdf--modern .pdf__band { margin: -52px -56px 26px; padding: 32px 56px; background: var(--paper-accent); color: #fff; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.crm .pdf--modern .pdf__band .pdf-logo__name { color: #fff; }
+.crm .pdf-logo__mark--ghost { background: oklch(1 0 0 / 0.16) !important; box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.3); }
+.crm .pdf-logo__tag--on { color: oklch(1 0 0 / 0.85); }
+.crm .pdf__org--on { color: oklch(1 0 0 / 0.9); }
+.crm .pdf__org--on .lic { color: #fff; }
+.crm .pdf--modern .pdf__title-row { margin-top: 0; }
+.crm .pdf--modern .pdf__head { display: none; }
+
+.crm .pdf__deposit { margin-top: 12px; padding: 11px 16px; background: var(--brand-tint-08); border: 1px solid var(--brand-tint-30); border-radius: 8px; display: flex; align-items: center; gap: 12px; font: 400 12px/1.4 var(--font-sans); color: var(--ink); flex-wrap: wrap; }
+.crm .pdf__deposit b { color: var(--paper-accent); }
+.crm .pdf__deposit .dot { color: var(--line); }
+
+.crm .pdf__photos { margin-top: 24px; }
+.crm .pdf__photo-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 4px; }
+.crm .pdf__photo { aspect-ratio: 4/3; border-radius: 7px; }
+.crm .pdf__photo-cell { min-width: 0; }
+.crm .pdf__photo-cap { font: 500 9.5px/1.35 var(--font-sans); color: var(--ink-soft); margin-top: 5px; }

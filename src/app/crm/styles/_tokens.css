@@ -1,0 +1,227 @@
+/* Design tokens (light + dark), base reset and type scale.
+   Part of the CRM design system — see crm.css for the import order. */
+
+/* ============================================================
+   Design tokens — light (default)
+
+   `.crm-login` renders outside `.crm` (the layout short-circuits for
+   unauthenticated users), so it has to carry the palette itself or it
+   inherits the marketing site's `:root` brand red.
+   ============================================================ */
+.crm,
+.crm-login {
+  /* The token blocks below follow `prefers-color-scheme`, so the UA has to be
+     told as well — without this the native select popup, the scrollbars, the
+     caret and Chrome's autofill fill stay light inside a dark CRM, and this is
+     a tool made almost entirely of form controls. */
+  color-scheme: light dark;
+
+  /* Radius scale (base 8px) */
+  --radius: 0.5rem;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-full: 9999px;
+
+  /* Core semantic colours */
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.961 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.961 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.961 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.527 0.154 150.069);
+  --success-foreground: oklch(0.145 0 0);
+  --warning: oklch(0.795 0.184 86.047);
+  --warning-foreground: oklch(0.145 0 0);
+  --border: oklch(0.902 0 0);
+  --input: oklch(0 0 0 / 0.14);
+  --ring: oklch(0.708 0 0);
+
+  /* Surfaces */
+  --surface-1: oklch(0.975 0.002 270);
+  --surface-2: oklch(0.962 0.002 270);
+  --surface-3: oklch(0.9 0.003 270);
+  --surface-hover: oklch(0.955 0.003 270);
+
+  /* Sidebar */
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.546 0.245 262.881);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.961 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.902 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Chart scale — six categorical colours */
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.627 0.194 162.48);
+  --chart-3: oklch(0.558 0.265 303.9);
+  --chart-4: oklch(0.725 0.184 86.047);
+  --chart-5: oklch(0.505 0.213 27.325);
+  --chart-6: oklch(0.584 0.143 215.221);
+
+  /* Status accents — fixed hues, identical in both themes so a
+     "critical" nudge reads the same wherever it lands. */
+  --status-critical: #ef4444;
+  --status-high: #f97316;
+  --status-warning: #f59e0b;
+  --status-info: #3b82f6;
+  --status-success: #10b981;
+  --status-low: #6b7280;
+
+  /* Brand — steel / Colorbond blue. The marketing site's red is the
+     customer-facing mark; the operator tool is deliberately cooler so a
+     quote PDF's accent never gets mistaken for a status colour. */
+  --brand: oklch(0.605 0.118 233);
+  --brand-strong: oklch(0.52 0.12 233);
+  --brand-foreground: oklch(0.99 0 0);
+  --brand-tint-08: oklch(0.605 0.118 233 / 0.08);
+  --brand-tint-12: oklch(0.605 0.118 233 / 0.12);
+  --brand-tint-30: oklch(0.605 0.118 233 / 0.30);
+  --brand-glow: 0 0 16px oklch(0.605 0.118 233 / 0.30);
+
+  /* Neutral fills — alpha over whatever surface sits underneath, so a
+     card and a table header stay related without hardcoding pairs. */
+  --fill-1: oklch(0 0 0 / 0.022);
+  --fill-2: oklch(0 0 0 / 0.03);
+  --fill-strong: oklch(0 0 0 / 0.045);
+  --row-border: oklch(0 0 0 / 0.06);
+  --hairline: oklch(0 0 0 / 0.075);
+  --topbar-bg: oklch(1 0 0 / 0.82);
+  --pdf-stage-bg: oklch(0.93 0.004 270);
+
+  /* Fonts. next/font already serves Inter and Fraunces from the root
+     layout — importing Google Fonts again here would ship a second,
+     render-blocking copy of the same faces. No mono webfont is loaded,
+     so mono falls back to the platform's. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-display: var(--font-fraunces), Georgia, "Iowan Old Style", serif;
+
+  /* Elevations. Lighter than the prototype's — those alphas were tuned
+     against a near-black background and read as smudges on white. */
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.08);
+  --shadow-md: 0 4px 12px -2px oklch(0 0 0 / 0.10);
+  --shadow-lg: 0 12px 28px -6px oklch(0 0 0 / 0.14);
+  --shadow-xl: 0 25px 50px -12px oklch(0 0 0 / 0.22);
+  --shadow-primary-glow: 0 0 16px oklch(0.546 0.245 262.881 / 0.30);
+}
+
+/* ============================================================
+   Design tokens — dark
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  .crm,
+  .crm-login {
+    --background: oklch(0.13 0.01 280);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.17 0.008 280);
+    --card-foreground: oklch(0.96 0.005 260);
+    --popover: oklch(0.17 0.008 280);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.546 0.245 262.881);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(0.985 0 0);
+    --success: oklch(0.696 0.17 162.48);
+    --success-foreground: oklch(0.985 0 0);
+    --warning: oklch(0.795 0.184 86.047);
+    --warning-foreground: oklch(0.145 0 0);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+
+    --surface-1: #0c0c14;
+    --surface-2: #12121c;
+    --surface-3: #1a1a28;
+    --surface-hover: #1e1e2d;
+
+    --sidebar: oklch(0.11 0.012 280);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.546 0.245 262.881);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+
+    --chart-1: oklch(0.546 0.245 262.881);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.627 0.265 303.9);
+    --chart-4: oklch(0.795 0.184 86.047);
+    --chart-5: oklch(0.577 0.245 27.325);
+    --chart-6: oklch(0.715 0.143 215.221);
+
+    --fill-1: oklch(1 0 0 / 0.02);
+    --fill-2: oklch(1 0 0 / 0.04);
+    --fill-strong: oklch(1 0 0 / 0.05);
+    --row-border: oklch(1 0 0 / 0.045);
+    --hairline: oklch(1 0 0 / 0.05);
+    --topbar-bg: oklch(0.13 0.01 280 / 0.86);
+    --pdf-stage-bg: oklch(0.09 0.008 280);
+
+    --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.40);
+    --shadow-md: 0 4px 12px -2px oklch(0 0 0 / 0.45);
+    --shadow-lg: 0 12px 28px -6px oklch(0 0 0 / 0.55);
+    --shadow-xl: 0 25px 50px -12px oklch(0 0 0 / 0.25);
+  }
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+.crm,
+.crm-login,
+.crm *, .crm *::before, .crm *::after,
+.crm-login *, .crm-login *::before, .crm-login *::after { box-sizing: border-box; }
+
+.crm button, .crm input, .crm select, .crm textarea,
+.crm-login button, .crm-login input, .crm-login select, .crm-login textarea { font-family: inherit; }
+.crm button, .crm-login button { cursor: pointer; }
+
+.crm .tabular-nums { font-variant-numeric: tabular-nums; }
+.crm .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.crm [data-lucide] { display: inline-block; }
+
+/* ============================================================
+   Type scale
+   ============================================================ */
+.crm .text-label    { font-size: 0.6875rem; line-height: 1rem;    letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+.crm .text-caption  { font-size: 0.75rem;   line-height: 1rem; }
+.crm .text-body     { font-size: 0.8125rem; line-height: 1.25rem; }
+.crm .text-subtitle { font-size: 0.875rem;  line-height: 1.25rem; font-weight: 500; }
+.crm .text-heading  { font-size: 1.125rem;  line-height: 1.5rem;  font-weight: 600; }
+.crm .text-display  { font-size: 1.5rem;    line-height: 2rem;    font-weight: 700; letter-spacing: -0.01em; }
+.crm .text-data     { font-size: 0.8125rem; line-height: 1.25rem; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.crm h1, .crm .h1 { margin: 0; font: 700 1.5rem/2rem var(--font-sans); letter-spacing: -0.01em; color: var(--foreground); }
+.crm h2, .crm .h2 { margin: 0; font: 600 1.125rem/1.5rem var(--font-sans); color: var(--foreground); }
+.crm h3, .crm .h3 { margin: 0; font: 600 1rem/1.25rem var(--font-sans); color: var(--foreground); }
+.crm h4, .crm .h4 { margin: 0; font: 600 0.875rem/1.25rem var(--font-sans); color: var(--foreground); }
+.crm p            { font: 400 0.8125rem/1.25rem var(--font-sans); color: var(--foreground); }
+.crm small        { font-size: 0.75rem; color: var(--muted-foreground); }
+.crm code, .crm pre, .crm kbd, .crm .font-mono { font-family: var(--font-mono); font-size: 0.8125rem; }
+.crm kbd { padding: 2px 5px; border: 1px solid var(--border); border-radius: 4px; background: var(--background); font-size: 10px; }
+
+/* Display serif — hero / wordmark only. */
+.crm .font-display { font-family: var(--font-display); font-weight: 400; }

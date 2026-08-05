@@ -1,0 +1,213 @@
+/* Buttons, pills, cards, form controls, tables, empty state.
+   Part of the CRM design system — see crm.css for the import order. */
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.crm .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  height: 34px; padding: 0 13px;
+  border-radius: 9px; border: 1px solid transparent;
+  font: 600 13px/1 var(--font-sans); white-space: nowrap;
+  transition: background 150ms, border-color 150ms, transform 80ms, opacity 150ms;
+}
+.crm .btn:active { transform: translateY(1px); }
+.crm .btn:disabled { opacity: 0.45; pointer-events: none; }
+.crm .btn--brand { background: var(--brand); color: var(--brand-foreground); }
+.crm .btn--brand:hover { background: var(--brand-strong); }
+.crm .btn--outline { background: var(--fill-1); border-color: var(--border); color: var(--foreground); }
+.crm .btn--outline:hover { background: var(--surface-hover); }
+.crm .btn--ghost { background: transparent; color: var(--muted-foreground); }
+.crm .btn--ghost:hover { background: var(--surface-hover); color: var(--foreground); }
+.crm .btn--subtle { background: var(--surface-3); color: var(--foreground); }
+.crm .btn--subtle:hover { background: var(--surface-hover); }
+.crm .btn--danger { background: oklch(0.704 0.191 22.216 / 0.16); color: var(--status-critical); }
+.crm .btn--danger:hover { background: oklch(0.704 0.191 22.216 / 0.26); }
+.crm .btn--success { background: var(--success); color: #03241a; }
+.crm .btn--success:hover { background: oklch(0.696 0.17 162.48 / 0.86); }
+.crm .btn--sm { height: 28px; padding: 0 10px; font-size: 12px; border-radius: 7px; }
+.crm .btn--lg { height: 40px; padding: 0 18px; font-size: 14px; }
+.crm .btn--icon { width: 34px; padding: 0; }
+.crm .btn--block { width: 100%; }
+
+/* ============================================================
+   Pills / badges
+   ============================================================ */
+.crm .pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border-radius: 999px;
+  font: 600 11px/1.3 var(--font-sans); white-space: nowrap;
+}
+.crm .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.crm .pill--draft { background: var(--muted); color: var(--muted-foreground); }
+.crm .pill--sent { background: oklch(0.696 0.17 162.48 / 0.13); color: var(--status-success); }
+.crm .pill--viewed { background: var(--brand-tint-12); color: var(--brand); }
+.crm .pill--accepted { background: var(--brand-tint-12); color: var(--brand); }
+.crm .pill--warning { background: oklch(0.795 0.184 86.047 / 0.14); color: var(--status-warning); }
+.crm .pill--no-dot::before { display: none; }
+
+/* `QuoteStatus` carries seven states; the prototype's mock data only ever
+   produced four, so these three arrived with no rule and rendered as bare text
+   on a transparent pill. Declined and expired are precisely the two an operator
+   has to spot from across a list. */
+.crm .pill--declined { background: oklch(0.704 0.191 22.216 / 0.14); color: var(--status-critical); }
+.crm .pill--expired { background: oklch(0.795 0.184 86.047 / 0.14); color: var(--status-warning); }
+.crm .pill--superseded { background: var(--muted); color: var(--status-low); }
+
+/* Internal-only marker on margin rows — the operator must never mistake
+   a cost figure for something the client can see. */
+.crm .int-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 6px; border-radius: 999px;
+  font: 600 9px/1 var(--font-sans); letter-spacing: 0.05em; text-transform: uppercase;
+  background: var(--muted); color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  vertical-align: 1px; cursor: help;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.crm .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+.crm .card--p { padding: 20px; }
+.crm .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.crm .card-title { font: 600 14px/1.2 var(--font-sans); }
+.crm .card-sub { margin-top: 3px; font: 400 12px/1.4 var(--font-sans); color: var(--muted-foreground); }
+.crm .section-label { font: 600 11px/1 var(--font-sans); text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-foreground); }
+
+/* Phase-gate placeholder used by the shell's not-built-yet screens. */
+.crm-placeholder {
+  margin-top: 24px;
+  max-width: 620px;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.crm-placeholder__title { font: 600 13px/1.3 var(--font-sans); }
+.crm-placeholder p { margin: 8px 0 0; font: 400 13px/1.55 var(--font-sans); color: var(--muted-foreground); }
+
+.crm-checklist { margin: 16px 0 0; padding: 0; list-style: none; font-size: 13px; }
+.crm-checklist li { display: flex; align-items: center; gap: 9px; padding: 5px 0; color: var(--muted-foreground); }
+.crm-checklist li::before { content: "○"; color: var(--muted-foreground); }
+.crm-checklist li[data-done="true"] { color: var(--foreground); }
+.crm-checklist li[data-done="true"]::before { content: "●"; color: var(--brand); }
+
+/* ============================================================
+   Form controls
+   ============================================================ */
+.crm .field { display: flex; flex-direction: column; gap: 6px; }
+.crm .field__label { display: flex; align-items: center; gap: 6px; font: 600 11.5px/1 var(--font-sans); color: var(--muted-foreground); }
+.crm .field__hint { font: 400 11px/1.4 var(--font-sans); color: var(--muted-foreground); }
+.crm .req { color: var(--status-critical); }
+
+.crm .input, .crm .select, .crm .textarea {
+  width: 100%;
+  background: var(--fill-2);
+  border: 1px solid var(--input);
+  border-radius: 8px;
+  color: var(--foreground);
+  font: 400 13px/1.4 var(--font-sans);
+  padding: 9px 11px;
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+}
+.crm .input:focus, .crm .select:focus, .crm .textarea:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-tint-12);
+  background: var(--fill-strong);
+}
+.crm .input::placeholder, .crm .textarea::placeholder { color: var(--muted-foreground); }
+.crm .textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+.crm .select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a0a0a8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 30px;
+}
+.crm .input--mono { font-family: var(--font-mono); }
+.crm .input-prefix { position: relative; }
+.crm .input-prefix > span { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted-foreground); font: 400 13px/1 var(--font-mono); pointer-events: none; }
+.crm .input-prefix .input { padding-left: 24px; font-family: var(--font-mono); }
+
+.crm .search {
+  position: relative; display: inline-flex; align-items: center; width: 100%; max-width: 340px;
+  background: var(--fill-2); border: 1px solid var(--input); border-radius: 9px; padding: 0 11px;
+}
+.crm .search [data-lucide] { color: var(--muted-foreground); }
+.crm .search input { flex: 1; height: 36px; background: transparent; border: 0; outline: 0; color: var(--foreground); font: 400 13px/1 var(--font-sans); padding-left: 9px; }
+.crm .search input::placeholder { color: var(--muted-foreground); }
+
+.crm .toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.crm .toggle__track {
+  width: 38px; height: 22px; border-radius: 999px; flex-shrink: 0;
+  background: var(--surface-3); border: 1px solid var(--border); position: relative;
+  transition: background 150ms, border-color 150ms;
+}
+.crm .toggle__track::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%; background: var(--muted-foreground);
+  transition: transform 150ms, background 150ms;
+}
+.crm .toggle.is-on .toggle__track { background: var(--brand); border-color: var(--brand); }
+.crm .toggle.is-on .toggle__track::after { transform: translateX(16px); background: #fff; }
+.crm .toggle__label { font: 500 13px/1.3 var(--font-sans); }
+
+.crm .check { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.crm .check__box {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+  border: 1.5px solid var(--input); background: var(--fill-1);
+  display: inline-flex; align-items: center; justify-content: center; color: transparent;
+  transition: background 120ms, border-color 120ms, color 120ms;
+}
+.crm .check.is-on .check__box { background: var(--brand); border-color: var(--brand); color: #fff; }
+.crm .check__text { font: 400 13px/1.45 var(--font-sans); color: var(--foreground); }
+
+.crm .seg { display: inline-flex; background: var(--surface-3); border: 1px solid var(--border); border-radius: 9px; padding: 2px; gap: 2px; }
+.crm .seg__btn { border: 0; background: transparent; color: var(--muted-foreground); font: 600 12px/1 var(--font-sans); padding: 7px 12px; border-radius: 7px; transition: all 150ms; }
+.crm .seg__btn.is-active { background: var(--brand); color: var(--brand-foreground); }
+
+/* ============================================================
+   Tables
+   ============================================================ */
+.crm .table-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--card); }
+.crm .table { width: 100%; border-collapse: collapse; font: 400 13px/1.4 var(--font-sans); }
+.crm .table th {
+  text-align: left; padding: 11px 16px;
+  font: 600 10px/1 var(--font-sans); color: var(--muted-foreground);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border); background: var(--fill-1); white-space: nowrap;
+}
+.crm .table td { padding: 14px 16px; border-bottom: 1px solid var(--row-border); }
+.crm .table tbody tr:last-child td { border-bottom: 0; }
+.crm .table tbody tr { transition: background 120ms; cursor: pointer; }
+.crm .table tbody tr:hover td { background: var(--surface-hover); }
+.crm .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.crm .t-right { text-align: right; }
+
+/* Filter tabs above a list */
+.crm .list-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.crm .ftabs { display: inline-flex; gap: 2px; background: var(--fill-1); border: 1px solid var(--border); border-radius: 10px; padding: 3px; flex-wrap: wrap; }
+.crm .ftab {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 0; background: transparent; border-radius: 7px;
+  padding: 7px 11px; color: var(--muted-foreground);
+  font: 600 12px/1 var(--font-sans);
+  transition: background 150ms, color 150ms;
+}
+.crm .ftab:hover { background: var(--surface-hover); color: var(--foreground); }
+.crm .ftab.is-active { background: var(--brand-tint-12); color: var(--brand); }
+.crm .ftab__count { font: 600 10px/1 var(--font-mono); padding: 2px 6px; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); }
+.crm .ftab.is-active .ftab__count { background: var(--brand-tint-12); color: var(--brand); }
+
+/* Follow-up / expiry nudges — the only thing that makes a stale quote visible. */
+.crm .nudge { margin-top: 5px; font: 500 10.5px/1.3 var(--font-sans); white-space: nowrap; }
+.crm .nudge--warning { color: var(--status-warning); }
+.crm .nudge--critical { color: var(--status-critical); }
+
+/* ============================================================
+   Empty state
+   ============================================================ */
+.crm .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 24px; gap: 6px; text-align: center; }
+.crm .empty__icon { width: 52px; height: 52px; border-radius: 14px; background: var(--surface-3); display: inline-flex; align-items: center; justify-content: center; color: var(--muted-foreground); margin-bottom: 8px; }
+.crm .empty h3 { margin: 0; font: 600 15px/1.3 var(--font-sans); }
+.crm .empty p { margin: 2px 0 12px; font: 400 13px/20px var(--font-sans); color: var(--muted-foreground); max-width: 360px; }

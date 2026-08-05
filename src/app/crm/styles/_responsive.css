@@ -1,0 +1,158 @@
+/* Responsive rules, focus rings and keyframes.
+   Part of the CRM design system — see crm.css for the import order. */
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+/* The shell has no hamburger, so below the sidebar breakpoint the nav
+   becomes a horizontal strip rather than disappearing — every screen
+   has to stay reachable from a phone. */
+@media (max-width: 940px) {
+  .crm { grid-template-columns: 1fr; }
+
+  .crm-sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--sidebar-border);
+  }
+
+  .crm-nav { padding: 8px 12px; overflow-x: auto; }
+  .crm-nav__group { display: flex; align-items: center; gap: 8px; }
+  .crm-nav__group + .crm-nav__group { margin-top: 4px; }
+  .crm-nav__label { padding: 0; flex-shrink: 0; }
+  .crm-nav ul { flex-direction: row; margin: 0; }
+  .crm-nav__item { white-space: nowrap; padding: 7px 11px; }
+  .crm-nav__item.is-active,
+  .crm-nav__item[aria-current="page"] { box-shadow: none; }
+
+  .crm .builder { grid-template-columns: 1fr; }
+  .crm .builder__rail { position: static; }
+  .crm .qview { grid-template-columns: 1fr; }
+  .crm .qview__rail { position: static; }
+  .crm .settings-grid { grid-template-columns: 1fr; }
+  .crm .settings-tabs { flex-direction: row; flex-wrap: wrap; position: static; }
+  .crm .dash-cols { grid-template-columns: 1fr !important; }
+
+  .crm .mbar { display: flex; }
+  .crm .builder-page { padding-bottom: 72px; }
+  .crm .toast-wrap { bottom: 84px; }
+}
+
+/* Dense lists reflow into stacked cards — each row becomes a labelled
+   card so nothing is clipped on a phone. */
+@media (max-width: 760px) {
+  .crm .table-wrap--cards { border: 0; background: transparent; overflow: visible; border-radius: 0; }
+  .crm .table--cards thead { display: none; }
+  .crm .table--cards,
+  .crm .table--cards tbody,
+  .crm .table--cards tr,
+  .crm .table--cards td { display: block; width: 100%; }
+  .crm .table--cards tr {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px 15px; margin-bottom: 10px;
+    transition: border-color 150ms;
+  }
+  .crm .table--cards tr:active { border-color: var(--brand); }
+  .crm .table--cards tbody tr:hover td { background: transparent; }
+  .crm .table--cards td {
+    border: 0; border-bottom: 1px solid var(--row-border);
+    padding: 9px 0; min-height: 0; text-align: left;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .crm .table--cards tr td:last-child { border-bottom: 0; }
+  .crm .table--cards td.num, .crm .table--cards td.t-right { text-align: right; }
+  .crm .table--cards td::before {
+    content: attr(data-label);
+    font: 600 10px/1.3 var(--font-sans); text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted-foreground); flex-shrink: 0; white-space: nowrap;
+  }
+  .crm .table--cards td[data-label=""]::before { display: none; }
+  .crm .table--cards td.cell-stack { flex-direction: column; align-items: stretch; gap: 4px; }
+  .crm .table--cards td.cell-action { justify-content: flex-end; padding: 10px 0 6px; gap: 8px; }
+}
+
+/* Modal becomes a bottom sheet on phones. */
+@media (max-width: 700px) {
+  .crm .scrim--sheet { align-items: flex-end; padding: 0; }
+  .crm .modal--sheet {
+    max-width: none; width: 100%;
+    border-radius: 16px 16px 0 0; border-bottom: 0;
+    max-height: 88vh;
+    animation: crm-sheet-up 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@media (max-width: 600px) {
+  /* 16px controls so iOS Safari doesn't zoom on focus */
+  .crm .input, .crm .select, .crm .textarea, .crm .search input,
+  .crm-field input { font-size: 16px; }
+
+  /* Comfortable tap targets */
+  .crm .btn, .crm-btn { height: 40px; padding: 0 16px; }
+  .crm .btn--sm { height: 34px; padding: 0 12px; font-size: 12px; }
+  .crm .icon-btn, .crm-signout { padding: 9px; }
+  .crm .li-row__del, .crm .pb-item__add { min-width: 36px; min-height: 36px; }
+
+  /* Drop the dense ABN / GST identity strip, keep the essentials */
+  .crm .topbar { gap: 8px; padding: 0 14px; }
+  .crm .topbar__id { display: none; }
+
+  .crm .kpi-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+  .crm .page-head { gap: 12px; }
+  .crm .page-head__actions { width: 100%; }
+  .crm .page-head__actions .btn { flex: 1 1 auto; }
+
+  .crm .search { max-width: none; }
+
+  .crm .pb-form-grid { grid-template-columns: 1fr 1fr !important; }
+  .crm .pb-form-grid > *:first-child,
+  .crm .pb-form-grid > *:last-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 560px) {
+  .crm .grid-2, .crm .grid-3 { grid-template-columns: 1fr; }
+  .crm .li-head { display: none; }
+  .crm .li-row { grid-template-columns: 1fr 1fr; gap: 6px 10px; padding: 12px; background: var(--fill-1); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+  .crm .li-row .li-desc { grid-column: 1 / -1; }
+  .crm .li-row__total { grid-column: 1 / -1; text-align: left; padding-top: 4px; border-top: 1px dashed var(--border); }
+  .crm .li-row__move { display: inline-flex; justify-self: start; }
+  .crm .li-row__del { justify-self: end; }
+  .crm .li-row__grip { display: none; }
+  .crm .pdf { width: 100%; padding: 28px 22px; }
+  .crm .pdf__clauses, .crm .pdf__parties { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 380px) {
+  .crm .kpi-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ============================================================
+   Focus rings — every interactive control stays keyboard-visible.
+   ============================================================ */
+.crm .btn:focus-visible, .crm .icon-btn:focus-visible,
+.crm .settings-tab:focus-visible, .crm .seg__btn:focus-visible, .crm .toggle:focus-visible,
+.crm .pb-item:focus-visible, .crm .tpl-item:focus-visible, .crm .ftab:focus-visible,
+.crm .chip:focus-visible, .crm .li-move-btn:focus-visible, .crm .li-row__del:focus-visible,
+.crm .pb-stepper__btn:focus-visible, .crm .fieldset__head--btn:focus-visible,
+.crm .area-calc__toggle:focus-visible, .crm .photo-add:focus-visible, .crm .toast__action:focus-visible,
+.crm .crumb button:focus-visible, .crm .crumb a:focus-visible,
+.crm .li-row__grip:focus-visible, .crm .photo-tile__del:focus-visible,
+.crm-nav__item:focus-visible, .crm-signout:focus-visible, .crm-btn:focus-visible {
+  outline: 2px solid var(--brand); outline-offset: 2px;
+}
+.crm .input:focus-visible, .crm .select:focus-visible, .crm .textarea:focus-visible,
+.crm .photo-cap:focus-visible, .crm-field input:focus-visible { outline: none; }
+
+/* ============================================================
+   Keyframes — `crm-` prefixed because @keyframes names are global
+   and this sheet is emitted alongside the marketing site's.
+   ============================================================ */
+@keyframes crm-fade { from { opacity: 0; } }
+@keyframes crm-pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes crm-toast-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes crm-sheet-up { from { transform: translateY(48px); opacity: 0.6; } }
+@keyframes crm-spin { to { transform: rotate(360deg); } }
