@@ -31,10 +31,15 @@ for key in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY; do
     grep -qE "^${key}=.+" "$ENV_FILE" || fail "$key missing or empty in $ENV_FILE"
 done
 
-# A service-role key baked into the image would sit in the layer history forever.
-if grep -qE '^\s*SUPABASE_SERVICE_ROLE_KEY' compose.yml; then
-    fail "SUPABASE_SERVICE_ROLE_KEY appears in compose.yml build args — remove it"
-fi
+# A secret baked into the image sits in the layer history forever, recoverable by
+# anyone who can pull it. Runtime env only — no exceptions, however convenient.
+for secret in SUPABASE_SERVICE_ROLE_KEY RESEND_API_KEY REPLICATE_API_TOKEN \
+              STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET MAPBOX_ACCESS_TOKEN \
+              NEARMAP_API_KEY; do
+    if grep -qE "^\s*${secret}\s*:" compose.yml; then
+        fail "$secret appears in compose.yml build args — move it to $ENV_FILE"
+    fi
+done
 
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 export GIT_COMMIT APP_PORT="$PORT"
