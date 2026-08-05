@@ -22,6 +22,31 @@ const PUBLIC_CRM_PATHS = ["/login", "/auth"];
 /** Client quote portal — token in the URL is the credential, never a session. */
 const PORTAL_PREFIX = "/q";
 
+/**
+ * Marks the second pass of our own host rewrite.
+ *
+ * Next resolves `NextResponse.rewrite()` by comparing the target's origin with
+ * the request's `Host`. They never match here: behind nginx (and in the
+ * standalone server the container runs) Next's own origin is the loopback
+ * address it listens on, while `Host` is the hostname the operator typed. So
+ * Next treats every CRM rewrite as EXTERNAL and proxies it back to itself over
+ * HTTP — and that second request arrives with `Host: localhost`, which this
+ * middleware then fails to recognise as the CRM. The symptom was that /login
+ * served a bare "Not found" and nobody could sign in at all.
+ *
+ * Neither origin fixes it: the loopback origin produces exactly that 404, and
+ * building the URL from `Host` instead makes Next try to reach the public
+ * hostname over the network and 500. So rather than fight the proxy, we mark the
+ * forwarded request and let the second pass straight through.
+ *
+ * On trust: this header is a routing hint, not an authorisation. Forging it on
+ * the public host reaches the CRM's HTML shell without the login redirect, and
+ * nothing more — every row those pages read is gated by RLS in Postgres against
+ * the caller's session, which a forged header does not create. The nginx vhost
+ * clears it on the way in regardless.
+ */
+const REWRITE_MARKER = "x-crm-rewrite";
+
 function isCrmHost(host: string) {
   const bare = host.split(":")[0].toLowerCase();
   return bare === APP_HOST || bare === "app.localhost";
@@ -46,6 +71,11 @@ export async function middleware(request: NextRequest) {
 
   // Shared API surface (incl. /api/health) is host-agnostic and never rewritten.
   if (pathname.startsWith("/api")) return NextResponse.next();
+
+  // Our own rewrite coming back around. Every decision below was already made on
+  // the first pass; re-deciding here would only get it wrong, because the host
+  // this request carries is Next's, not the operator's.
+  if (request.headers.get(REWRITE_MARKER)) return NextResponse.next();
 
   // ── Public host ────────────────────────────────────────────────────────
   if (!isCrmHost(host)) {
@@ -109,18 +139,25 @@ export async function middleware(request: NextRequest) {
     return res;
   };
 
-  // Build URLs from request.url so the origin always matches what Next is
-  // serving. A cloned nextUrl can carry a different host, which makes Next
-  // treat the rewrite as external and return 404.
+  // Redirect and rewrite targets are cloned from nextUrl so the origin is
+  // whatever Next considers its own. See REWRITE_MARKER for why the origin
+  // cannot be made to match the operator's hostname.
+  const at = (pathTo: string) => {
+    const url = request.nextUrl.clone();
+    url.pathname = pathTo;
+    url.search = "";
+    return url;
+  };
+
   if (!user && !isExempt(logical)) {
-    const url = new URL("/login", request.url);
+    const url = at("/login");
     url.searchParams.set("next", logical);
     return withSession(NextResponse.redirect(url));
   }
 
   // Signed in and sitting on /login — send them to the dashboard.
   if (user && logical === "/login") {
-    return withSession(NextResponse.redirect(new URL("/", request.url)));
+    return withSession(NextResponse.redirect(at("/")));
   }
 
   // The portal renders from the public tree — no rewrite.
@@ -130,9 +167,12 @@ export async function middleware(request: NextRequest) {
   // to itself, which would loop.
   if (alreadyRewritten) return withSession(sessionResponse);
 
-  const url = new URL(`/crm${logical === "/" ? "" : logical}`, request.url);
+  const url = at(`/crm${logical === "/" ? "" : logical}`);
   url.search = request.nextUrl.search;
-  return withSession(NextResponse.rewrite(url));
+
+  const forwarded = new Headers(request.headers);
+  forwarded.set(REWRITE_MARKER, "1");
+  return withSession(NextResponse.rewrite(url, { request: { headers: forwarded } }));
 }
 
 export const config = {
