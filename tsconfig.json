@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Node's native type stripping (node --test tests/*.test.ts) resolves
+    // imports literally, so test files import "../src/lib/money.ts". Safe here
+    // because noEmit is on — tsc never has to rewrite the specifier.
+    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [
