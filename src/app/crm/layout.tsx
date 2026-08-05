@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase-server";
+import { Icon } from "@/components/crm/icon";
+import { ToastHost } from "@/components/crm/toast";
 import { SignOutButton } from "./sign-out-button";
 import "./crm.css";
 
@@ -15,12 +17,19 @@ export const dynamic = "force-dynamic";
 
 const NAV = [
   { group: "Workspace", items: [
-    { href: "/", label: "Dashboard" },
-    { href: "/quotes", label: "Quotes" },
-    { href: "/clients", label: "Clients" },
+    { href: "/", label: "Dashboard", icon: "trending-up" },
+    { href: "/pipeline", label: "Pipeline", icon: "kanban" },
+    { href: "/quotes", label: "Quotes", icon: "file-text" },
+    { href: "/tasks", label: "Tasks", icon: "list-checks" },
+    { href: "/clients", label: "Clients", icon: "users" },
+  ]},
+  { group: "Delivery", items: [
+    { href: "/jobs", label: "Jobs", icon: "briefcase" },
+    { href: "/invoices", label: "Invoices", icon: "receipt" },
   ]},
   { group: "Business", items: [
-    { href: "/settings", label: "Settings" },
+    { href: "/reports", label: "Reports", icon: "bar-chart-3" },
+    { href: "/settings", label: "Settings", icon: "settings" },
   ]},
 ];
 
@@ -60,7 +69,10 @@ export default async function CrmLayout({
               <ul>
                 {g.items.map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} className="crm-nav__item">{item.label}</Link>
+                    <Link href={item.href} className="crm-nav__item">
+                      <Icon name={item.icon} size={16} />
+                      <span>{item.label}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -78,7 +90,9 @@ export default async function CrmLayout({
         </div>
       </aside>
 
-      <main className="crm-main">{children}</main>
+      <main className="crm-main">
+        <ToastHost>{children}</ToastHost>
+      </main>
     </div>
   );
 }
