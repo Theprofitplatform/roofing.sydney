@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Codebase-graph tool output (regenerable)
+.graphify/
+graphify-out/

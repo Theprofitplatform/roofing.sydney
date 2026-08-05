@@ -1,0 +1,45 @@
+# roofing.sydney — public site + CRM.
+#
+# The container binds to loopback only; host nginx terminates TLS and proxies
+# both roofing.sydney and app.roofing.sydney to it. Nothing here faces the
+# internet directly.
+#
+# Build args are public values (they end up in the client bundle either way).
+# Runtime secrets come from .env.production on the host — never from build args.
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_GOOGLE_PLACES_API_KEY: ${NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}
+        NEXT_PUBLIC_CONTACT_PHONE: ${NEXT_PUBLIC_CONTACT_PHONE}
+        NEXT_PUBLIC_APP_HOST: ${NEXT_PUBLIC_APP_HOST:-app.roofing.sydney}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    image: roofing-sydney:latest
+    container_name: roofing-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-9030}:3000"
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 4s
+      start_period: 20s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
