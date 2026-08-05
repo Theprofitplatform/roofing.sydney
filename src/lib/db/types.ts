@@ -24,6 +24,10 @@ export type JobStatus = "scheduled" | "in_progress" | "on_hold" | "complete" | "
 export type InvoiceKind = "deposit" | "progress" | "final";
 export type InvoiceStatus = "draft" | "sent" | "part_paid" | "paid" | "void";
 export type PaymentMethod = "stripe" | "bank_transfer" | "cash" | "other";
+export type Tier = "good" | "better" | "best";
+export type PdfLayout = "classic" | "modern";
+export type AttachmentKind =
+  | "engineer_report" | "colour_sheet" | "warranty" | "photo" | "other";
 
 export interface User {
   id: string;
@@ -51,6 +55,8 @@ export interface Client {
 export interface Opportunity {
   id: string;
   client_id: string;
+  /** Which public-site enquiry produced this card, if any. */
+  lead_id: string | null;
   stage_id: StageId;
   title: string | null;
   roof_type: string | null;
@@ -87,15 +93,22 @@ export interface Quote {
   notes: string | null;
   valid_days: number;
   show_breakdown: boolean;
-  pdf_layout: "classic" | "modern";
+  pdf_layout: PdfLayout;
   /** Markup applied to cost to reach the client-facing price. */
   margin_pct: number;
   gst_enabled: boolean;
   gst_rate: number;
   include_photos: boolean;
-  /** Frozen at issue. Null on drafts. */
+  /** Frozen at issue — the base scope, as the client received it. Null on drafts. */
   subtotal_cents: number | null;
   total_cents: number | null;
+  /**
+   * What the client actually accepted, once their tier and optional extras are
+   * resolved. Kept separate so the issued figures above stay frozen and the
+   * document always reproduces what was sent.
+   */
+  accepted_total_cents: number | null;
+  selected_tier: Tier | null;
   pdf_path: string | null;
   portal_token: string | null;
   created_at: string;
@@ -104,10 +117,19 @@ export interface Quote {
   viewed_at: string | null;
   accepted_at: string | null;
   declined_at: string | null;
+  declined_reason: string | null;
   signed_name: string | null;
   signed_at: string | null;
   signed_ip: string | null;
   created_by: string | null;
+}
+
+/** A homeowner's pick of an optional extra, recorded at acceptance. */
+export interface QuoteSelection {
+  id: string;
+  quote_id: string;
+  quote_item_id: string;
+  selected_at: string;
 }
 
 export interface QuoteItem {
@@ -120,7 +142,7 @@ export interface QuoteItem {
   /** Supplier COST. The client-facing document marks this up by margin_pct. */
   unit_cost_cents: number;
   is_optional: boolean;
-  tier: "good" | "better" | "best" | null;
+  tier: Tier | null;
   sort: number;
 }
 
@@ -252,4 +274,51 @@ export interface Payment {
   reference: string | null;
   received_at: string;
   created_by: string | null;
+}
+
+/** Stages are rows, not an enum — reordering must not need a migration. */
+export interface PipelineStage {
+  id: StageId;
+  label: string;
+  sort: number;
+  is_terminal: boolean;
+}
+
+export interface Variation {
+  id: string;
+  job_id: string;
+  quote_id: string | null;
+  reason: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+/** Non-photo job paperwork: engineer's report, colour sheet, warranty. */
+export interface JobAttachment {
+  id: string;
+  job_id: string;
+  storage_path: string;
+  filename: string | null;
+  kind: AttachmentKind;
+  caption: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+/** A public-site enquiry, before it becomes a client. */
+export interface Lead {
+  id: string;
+  created_at: string;
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
+  place_id: string | null;
+  selected_colour_id: string | null;
+  selected_colour_name: string | null;
+  best_time: string | null;
+  notes: string | null;
+  source: string;
 }
