@@ -1,3 +1,12 @@
+-- ⚠ SUPERSEDED by supabase/migrations/ as of the CRM build (Phase 1).
+--
+-- The leads table is now created by 0001_foundation.sql, and 0007_rls.sql adds
+-- the staff read policy this file's "no policies" comment predates. Kept only
+-- so existing instructions do not dangle — for a new database run the
+-- migrations in order, then supabase/seed.sql. Do not apply both.
+--
+-- Original contents follow.
+
 -- Run this once in your Supabase project's SQL editor.
 
 create extension if not exists "pgcrypto";

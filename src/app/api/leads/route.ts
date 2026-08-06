@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { validateLead, type LeadInput } from "@/lib/leads";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { notifyContractor } from "@/lib/email";
+import { intakeLead } from "@/lib/db/pipeline";
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
@@ -26,9 +27,11 @@ export async function POST(req: Request) {
     null;
   const userAgent = req.headers.get("user-agent") ?? null;
 
+  let leadId: string | null = null;
+
   try {
     const supabase = getSupabaseAdmin();
-    const { error } = await supabase.from("leads").insert({
+    const { data, error } = await supabase.from("leads").insert({
       name: lead.name,
       phone: lead.phone,
       email: lead.email,
@@ -43,7 +46,7 @@ export async function POST(req: Request) {
       source: "web",
       ip,
       user_agent: userAgent,
-    });
+    }).select("id").single();
     if (error) {
       console.error("supabase insert failed", error);
       return NextResponse.json(
@@ -51,12 +54,26 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+    leadId = data?.id ?? null;
   } catch (e) {
     console.error("supabase client error", e);
     return NextResponse.json(
       { error: "Lead storage is not configured." },
       { status: 500 }
     );
+  }
+
+  // Pull the enquiry straight into the pipeline as a client + an opportunity at
+  // `enquiry`. Best-effort on purpose: the homeowner's submission is already
+  // saved, and failing their request because an internal projection stumbled
+  // would lose the lead entirely. `intake_lead` is idempotent on lead_id, so the
+  // operator can retry from the CRM without creating a duplicate client.
+  if (leadId) {
+    try {
+      await intakeLead(leadId);
+    } catch (e) {
+      console.error("lead intake failed", e);
+    }
   }
 
   // Best-effort email — don't fail the request if Resend has a hiccup.

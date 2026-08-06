@@ -1,0 +1,36 @@
+/* ============================================================
+   CRM design system — ported from design-reference/quoting-tool
+   (app/tokens.css + app/app.css).
+
+   Two things changed in the port and nothing else:
+
+   1. SCOPE. Next.js emits this as a global stylesheet even though only
+      the CRM layout imports it, so a bare `.btn` or `.table` here would
+      leak onto the public marketing site. Every token block moved from
+      `:root` onto `.crm`, and every component selector is prefixed with
+      `.crm `. Class names are unchanged so ported JSX needs no churn.
+      Keyframes can't be scoped by a selector, so they carry a `crm-`
+      name prefix instead.
+
+   2. THEME DIRECTION. The prototype was dark-first with light as the
+      `:not(.dark)` fallback. Here light is the base and dark arrives via
+      `prefers-color-scheme` — the operator's OS decides, the same way
+      the shell already behaved.
+
+   Deliberately not ported: the Tweaks panel, its accent/density
+   switchers, and the EDITMODE markers. That was prototype tooling,
+   not product.
+   ============================================================ */
+
+/*
+ * Split across ./styles/ to keep every file inside the 500-line rule. The import
+ * order IS the cascade order — tokens must come first, and the responsive
+ * overrides last. Reordering these lines changes the rendering.
+ */
+@import "./styles/_tokens.css";
+@import "./styles/_shell.css";
+@import "./styles/_controls.css";
+@import "./styles/_builder.css";
+@import "./styles/_document.css";
+@import "./styles/_screens.css";
+@import "./styles/_responsive.css";

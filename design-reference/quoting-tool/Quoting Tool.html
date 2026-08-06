@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ARC — Quoting</title>
+<link rel="stylesheet" href="app/tokens.css" />
+<link rel="stylesheet" href="app/app.css" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#c4632f">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect x="380" y="180" width="440" height="540" rx="18" fill="#ffffff"/>
+    <path d="M600 90 L860 250 L340 250 Z" fill="#1f1d1b"/>
+    <rect x="430" y="320" width="240" height="22" rx="11" fill="#c4632f"/>
+    <rect x="430" y="378" width="340" height="14" rx="7" fill="#d8d4cf"/>
+    <rect x="430" y="412" width="300" height="14" rx="7" fill="#d8d4cf"/>
+    <rect x="430" y="446" width="320" height="14" rx="7" fill="#d8d4cf"/>
+    <rect x="430" y="540" width="160" height="14" rx="7" fill="#d8d4cf"/>
+    <rect x="650" y="528" width="120" height="38" rx="9" fill="#1f1d1b"/>
+  </svg>
+</template>
+<div id="root"></div>
+
+<script src="app/data.js"></script>
+<script type="text/babel" src="app/primitives.jsx"></script>
+<script type="text/babel" src="app/tweaks-panel.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/pdf.jsx"></script>
+<script type="text/babel" src="app/screen-quotes.jsx"></script>
+<script type="text/babel" src="app/screen-builder.jsx"></script>
+<script type="text/babel" src="app/screen-view.jsx"></script>
+<script type="text/babel" src="app/screen-settings.jsx"></script>
+<script type="text/babel" src="app/screen-clients.jsx"></script>
+
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "accent": "terracotta",
+  "density": "regular"
+}/*EDITMODE-END*/;
+
+const LS_KEY = "arc_state_v3";
+function loadState(key, fallback) {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return fallback;
+    const obj = JSON.parse(raw);
+    return key in obj ? obj[key] : fallback;
+  } catch (e) { return fallback; }
+}
+function persist(patch) {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    localStorage.setItem(LS_KEY, JSON.stringify({ ...obj, ...patch }));
+  } catch (e) {}
+}
+
+function nextQuoteNumber(quotes) {
+  const year = new Date().getFullYear();
+  let max = 0;
+  quotes.forEach((q) => {
+    const m = /Q-(\d{4})-(\d{4})/.exec(q.quote_number || "");
+    if (m && +m[1] === year) max = Math.max(max, +m[2]);
+  });
+  return `Q-${year}-${String(max + 1).padStart(4, "0")}`;
+}
+
+function defaultClauses(snippets, kind) {
+  return snippets.filter((s) => s.kind === kind && s.is_default).map((s) => s.text);
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [clients, setClients] = useState(() => loadState("clients", window.ARC_CLIENTS.map((c) => ({ ...c }))));
+  const [quotes, setQuotes] = useState(() => loadState("quotes", window.ARC_QUOTES.map((q) => ({ ...q }))));
+  const [snippets, setSnippets] = useState(() => loadState("snippets", window.ARC_SNIPPETS.map((s) => ({ ...s }))));
+  const [priceBook, setPriceBook] = useState(() => loadState("priceBook", window.ARC_PRICE_BOOK.map((p) => ({ ...p }))));
+  const [settings, setSettings] = useState(() => loadState("settings", { ...window.ARC_BUSINESS }));
+
+  useEffect(() => { window.ARC_CLIENTS = clients.map((c) => ({ ...c })); persist({ clients }); }, [clients]);
+  useEffect(() => { persist({ quotes }); }, [quotes]);
+  useEffect(() => { persist({ snippets }); }, [snippets]);
+  useEffect(() => { window.ARC_PRICE_BOOK = priceBook; persist({ priceBook }); }, [priceBook]);
+  useEffect(() => { Object.assign(window.ARC_BUSINESS, settings); persist({ settings }); }, [settings]);
+
+  const [route, setRoute] = useState({ name: "quotes" });
+  const [editingQuote, setEditingQuote] = useState(null);
+  const [isNew, setIsNew] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const [builderDirty, setBuilderDirty] = useState(false);
+  const [pending, setPending] = useState(null);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-accent", t.accent || "steel");
+  }, [t.accent]);
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", t.theme === "dark");
+  }, [t.theme]);
+
+  const applyRoute = (next) => { setBuilderDirty(false); setNavOpen(false); window.scrollTo(0, 0); setRoute(next); };
+  const navigate = (next) => {
+    if (route.name === "builder" && builderDirty) { setPending(() => () => applyRoute(next)); return; }
+    applyRoute(next);
+  };
+
+  const startNewQuote = (clientId, tpl) => {
+    let mem = {};
+    try { mem = JSON.parse(localStorage.getItem("arc_margin_mem") || "{}"); } catch (e) {}
+    const defMargin = settings.default_margin_pct != null ? settings.default_margin_pct : 20;
+    const q = {
+      id: "q_" + Date.now(),
+      quote_number: nextQuoteNumber(quotes),
+      client_id: clientId || "",
+      status: "draft",
+      template_id: tpl ? tpl.id : null,
+      roof_type: tpl ? tpl.roof_type : "",
+      notes: tpl ? (tpl.notes || "") : "",
+      valid_days: tpl ? tpl.valid_days : (settings.default_valid_days || 30),
+      show_breakdown: tpl ? tpl.show_breakdown : true,
+      margin_pct: tpl ? (mem[tpl.id] != null ? mem[tpl.id] : tpl.margin_pct) : defMargin,
+      gst_enabled: false,
+      pdf_layout: "classic",
+      photos: [],
+      include_photos: false,
+      line_items: tpl ? tpl.line_items.map((it) => ({ ...it })) : [],
+      inclusions: defaultClauses(snippets, "inclusion"),
+      exclusions: defaultClauses(snippets, "exclusion"),
+      custom_inclusions: [],
+      custom_exclusions: [],
+      created_at: new Date().toISOString(),
+      sent_at: null,
+    };
+    setEditingQuote(q); setIsNew(true);
+    applyRoute({ name: "builder" });
+  };
+
+  const duplicateQuote = (id) => {
+    const src = quotes.find((x) => x.id === id);
+    if (!src) return;
+    const copy = {
+      ...JSON.parse(JSON.stringify(src)),
+      id: "q_" + Date.now(),
+      quote_number: nextQuoteNumber(quotes),
+      status: "draft",
+      created_at: new Date().toISOString(),
+      sent_at: null, viewed_at: null, accepted_at: null,
+      custom_inclusions: [], custom_exclusions: [],
+    };
+    setEditingQuote(copy); setIsNew(true);
+    applyRoute({ name: "builder" });
+  };
+
+  const openQuote = (id) => { navigate({ name: "view", id }); };
+  const editQuote = (id) => {
+    const q = quotes.find((x) => x.id === id) || editingQuote;
+    setEditingQuote({ ...q, custom_inclusions: [], custom_exclusions: [] });
+    setIsNew(false);
+    navigate({ name: "builder" });
+  };
+
+  const saveQuote = (clean) => {
+    setQuotes((arr) => {
+      const exists = arr.some((x) => x.id === clean.id);
+      return exists ? arr.map((x) => (x.id === clean.id ? { ...x, ...clean } : x)) : [{ ...clean }, ...arr];
+    });
+    setEditingQuote(clean); setIsNew(false);
+    // Remember last-used margin per job template.
+    if (clean.template_id) {
+      try {
+        const mem = JSON.parse(localStorage.getItem("arc_margin_mem") || "{}");
+        mem[clean.template_id] = parseFloat(clean.margin_pct) || 0;
+        localStorage.setItem("arc_margin_mem", JSON.stringify(mem));
+      } catch (e) {}
+    }
+  };
+
+  const deleteQuote = (id) => {
+    setQuotes((arr) => arr.filter((x) => x.id !== id));
+    setEditingQuote((q) => (q && q.id === id ? null : q));
+    if (route.name === "view" && route.id === id) applyRoute({ name: "quotes" });
+  };
+
+  const addClient = (data) => {
+    const c = { id: "c_" + Date.now(), ...data };
+    setClients((arr) => [...arr, c]);
+    window.ARC_CLIENTS.push(c);
+    return c;
+  };
+
+  const updateClient = (id, data) => {
+    setClients((arr) => arr.map((c) => (c.id === id ? { ...c, ...data } : c)));
+    const idx = window.ARC_CLIENTS.findIndex((c) => c.id === id);
+    if (idx >= 0) window.ARC_CLIENTS[idx] = { ...window.ARC_CLIENTS[idx], ...data };
+  };
+
+  const markSent = (id) => {
+    setQuotes((arr) => arr.map((x) => (x.id === id ? { ...x, status: "sent", sent_at: new Date().toISOString() } : x)));
+    setEditingQuote((q) => (q && q.id === id ? { ...q, status: "sent", sent_at: new Date().toISOString() } : q));
+  };
+
+  const currentQuote = route.name === "view"
+    ? (quotes.find((x) => x.id === route.id) || editingQuote)
+    : editingQuote;
+
+  let screen = null;
+  if (route.name === "quotes") screen = <QuotesScreen quotes={quotes} settings={settings} onOpen={openQuote} onNew={() => startNewQuote()} onNewFromTemplate={(tpl) => startNewQuote(undefined, tpl)} onDuplicate={duplicateQuote} onDelete={deleteQuote} />;
+  else if (route.name === "clients") screen = <ClientsScreen clients={clients} quotes={quotes} onAddClient={addClient} onUpdateClient={updateClient} onNewQuoteFor={(cid) => startNewQuote(cid)} />;
+  else if (route.name === "settings") screen = <SettingsScreen settings={settings} snippets={snippets} priceBook={priceBook} onSaveSettings={(s) => { setSettings(s); Object.assign(window.ARC_BUSINESS, s); }} onSaveSnippets={setSnippets} onSavePriceBook={(pb) => { setPriceBook(pb); window.ARC_PRICE_BOOK = pb; }} />;
+  else if (route.name === "builder") screen = (
+    <BuilderScreen
+      initialQuote={editingQuote} isNew={isNew} clients={clients} snippets={snippets} priceBook={priceBook} settings={settings}
+      onAddClient={addClient} onUpdateClient={updateClient} onSave={saveQuote} onCancel={() => navigate({ name: "quotes" })}
+      onPreview={(id) => applyRoute({ name: "view", id })}
+      onEmail={(id) => { applyRoute({ name: "view", id }); setTimeout(() => setEmailOpen(true), 60); }}
+      onDirtyChange={setBuilderDirty}
+    />
+  );
+  else if (route.name === "view" && currentQuote) screen = (
+    <ViewScreen
+      quote={currentQuote} onBack={() => navigate({ name: "quotes" })} onEdit={() => editQuote(currentQuote.id)}
+      onDuplicate={() => duplicateQuote(currentQuote.id)} onDelete={deleteQuote}
+      onEmail={() => setEmailOpen(true)} emailOpen={emailOpen} onCloseEmail={() => setEmailOpen(false)}
+      onSent={() => { markSent(currentQuote.id); setEmailOpen(false); }}
+    />
+  );
+
+  return (
+    <div className={`app ${navOpen ? "nav-open" : ""} ${t.density === "compact" ? "compact" : ""}`} data-screen-label={`ARC · ${route.name}`}>
+      <Sidebar active={route.name} onNavigate={(id) => navigate({ name: id })} navOpen={navOpen} onClose={() => setNavOpen(false)} />
+      <div className="drawer-scrim" onClick={() => setNavOpen(false)} />
+      <div className="main">
+        <Topbar onHamburger={() => setNavOpen(true)} onNewQuote={() => startNewQuote()} />
+        <div className="content">{screen}</div>
+      </div>
+
+      {pending && (
+        <Modal title="Discard unsaved changes?" sub="This quote has changes that haven't been saved." onClose={() => setPending(null)}
+          footer={<>
+            <Button variant="ghost" onClick={() => setPending(null)}>Keep editing</Button>
+            <Button variant="danger" icon="trash-2" onClick={() => { const fn = pending; setPending(null); fn(); }}>Discard &amp; leave</Button>
+          </>}>
+          <p style={{ margin: 0, color: "var(--muted-foreground)" }}>If you leave now, the changes to this quote will be lost. You can save the draft first and come back to it anytime.</p>
+        </Modal>
+      )}
+
+      <TweaksPanel>
+        <TweakSection label="Theme" />
+        <TweakRadio label="Mode" value={t.theme} options={["light", "dark"]} onChange={(v) => setTweak("theme", v)} />
+        <TweakSection label="Brand accent" />
+        <TweakRadio label="Accent" value={t.accent} options={["steel", "terracotta", "cebu"]} onChange={(v) => setTweak("accent", v)} />
+        <TweakSection label="Layout" />
+        <TweakRadio label="Density" value={t.density} options={["regular", "compact"]} onChange={(v) => setTweak("density", v)} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ToastHost><App /></ToastHost>);
+</script>
+</body>
+</html>
