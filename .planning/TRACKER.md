@@ -31,8 +31,49 @@ Check what's held at any time: `bash .planning/scripts/tracker-lock.sh status`. 
 
 ## Active
 
-(no tracked items yet — add work here as W1, W2, ...)
+### W1 — Provision Supabase for the CRM
+
+**Status:** BLOCKED (needs the account holder — no Supabase project exists) — claude 2026-08-07
+**Spec:** `docs/crm-runbook.md` §1
+
+The CRM is merged to `main` (PR #2, merge commit `9389477`) but has never run
+against a live database. Provisioning is the only thing between here and a
+working CRM. Steps, in order: run migrations `0001`→`0014`, then `seed.sql`,
+then confirm the private `quotes` storage bucket exists (`0014` creates it if
+the `storage` schema is present), then turn off email signups after John's
+first sign-in.
+
+**Done means:** the whole spine driven in one go — build a quote from a
+template, issue it, open the portal link from the email in a private window,
+accept it, confirm a job appears. That single path exercises issue → PDF →
+storage → mail → portal → `viewed_at` → accept → job.
+
+### W2 — First VPS deploy of app.roofing.sydney
+
+**Status:** BLOCKED (on W1 — no point deploying against no database) — claude 2026-08-07
+**Spec:** `deploy/README.md`
+
+First run of `./scripts/deploy.sh` on the VPS; also the first real test of the
+Dockerfile, which has never been built. Then the nginx vhost
+(`deploy/nginx/app.roofing.sydney.conf`), then certbot once DNS resolves.
+
+**Trap:** `NEXT_PUBLIC_*` values must be passed as Docker **build args**, not
+just runtime env — they are inlined into the client and middleware bundles at
+build time. Supplying them only at runtime leaves middleware undefined and
+every CRM request 503s.
+
+**Done means:** `curl https://app.roofing.sydney/api/health` returns healthy
+and `/login` renders, with `roofing.sydney` unchanged.
 
 ---
 
 ## Done log (newest first)
+
+### W0 — Merge the CRM branch to main
+
+**Status:** DONE (2026-08-06, verified) — claude
+PR #2 (`feat/crm-phase-0`, 15 commits, 212 files, +36,139/−84) merged as
+`9389477`. Verified before merging in a throwaway worktree: `tsc --noEmit`
+clean, 348 unit tests, 132 PGlite DB tests, `next build` 35 routes, public
+marketing site untouched. Merge commit preserved all 15 phase commits; the
+branch was kept, not deleted. Nothing deployed — `main` does not auto-deploy.
