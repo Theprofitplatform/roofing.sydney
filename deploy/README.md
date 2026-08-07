@@ -7,8 +7,8 @@ renders the public marketing site.
 ## First-time setup on the VPS
 
 ⚠ **`~/roofing.sydney` on the VPS is not a spare checkout — it is what serves
-the live public site.** See "How the public site is actually served" below.
-Clone the CRM somewhere else and never run `git pull` in that directory.
+the live public site.** Clone the CRM somewhere else so you do not clone over
+it or restart it by accident. See "How the public site is actually served".
 
 Steps 2, 4 and 5 were completed on 2026-08-08 — DNS resolves, the vhost is
 enabled, and TLS is issued. Only steps 1 and 3 remain, and step 3 is blocked
@@ -114,20 +114,28 @@ Not by Vercel — this document claimed that until 2026-08-08 and it was wrong.
 
 `roofing.sydney` (A → `31.97.222.218`, Cloudflare-proxied) resolves to this
 same VPS. nginx vhost `roofing.sydney` proxies to `127.0.0.1:3402`, which is a
-bare `next-server` process started by hand out of `~/roofing.sydney`. Three
-things follow, none of them good:
+bare `next-server` process started by hand out of `~/roofing.sydney`.
 
 - **Nothing supervises it.** No pm2 entry, no systemd unit. It does not come
-  back after a reboot or a crash.
-- **That checkout is 23 commits behind `main`** and carries ~466 lines of
-  uncommitted edits plus 9 untracked files — the about/ and contact/ pages,
-  `HouseColourViz`, `QuoteForm`, `RoofSwatchViz`, `HeroSlideshow`. The live
-  site is *ahead* of `origin/main` in content.
-- **`git pull` there destroys that work.** It is preserved on branch
-  `rescue/vps-live-site-2026-08-08` (commit `d681107`), taken 2026-08-08, but
-  it has not been reviewed or reconciled with `main`.
+  back after a reboot or a crash. This is the real problem.
+- **That checkout is 23 commits behind `main`** (at `63c5ae6`) with a dirty
+  working tree on top.
 
-Reconciling that branch and putting the public site under supervision — ideally
-onto this same container, which is what the vhost comment describes — is
-tracked as W3 in `.planning/TRACKER.md`. Until then, treat `~/roofing.sydney`
-on the VPS as production state, not as a working copy.
+The dirty tree looks alarming — 466 lines and 9 untracked files against
+`63c5ae6` — but that is measured against a stale base. Compared with `main`,
+which is what matters, the live site differs by **4 files, +36/−102**, and
+every one of those differences is `main` being *newer*: `SiteNav` extracted
+into a component, `next/link` replacing raw anchors, the `/preview` route
+wired up, an explicit font stack to stop a pre-hydration serif flash, and ~89
+lines of theming in `redesign.css`. The uncommitted work on the box was an
+earlier draft of changes that were later committed properly.
+
+**Nothing of value exists only on the VPS.** It was captured anyway, before
+that was known, on branch `rescue/vps-live-site-2026-08-08` (commit `eb9d63c`,
+branched from `63c5ae6` so its diff is exactly what was live). Keep it as a
+belt-and-braces snapshot; there is nothing in it to merge.
+
+So `git pull` in `~/roofing.sydney` is safe — it discards only superseded
+draft work. The live site is *behind* `main`, not ahead of it. What still
+needs doing is supervising the process and getting it onto a committed
+revision; that is W3 in `.planning/TRACKER.md`.

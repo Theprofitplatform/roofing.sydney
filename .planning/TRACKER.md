@@ -67,8 +67,11 @@ Everything around the container is now done and verified (2026-08-08):
 What remains is only `./scripts/deploy.sh`, and it cannot run yet: lines 32–34
 `fail` if `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` are
 missing or empty from `.env.production`. Do **not** work around that guard with
-placeholder values — middleware constructs a Supabase client at request time,
-so a bogus URL breaks the host split rather than degrading gracefully.
+placeholder values: the guard's own 503 is a clear, self-describing failure,
+whereas a syntactically valid but fake URL sails past it and instead fails
+inside `supabase.auth.getUser()` on every CRM request — an opaque 500 that
+looks like an outage. A fake-key deploy would prove the Dockerfile builds and
+nothing else.
 
 **Clone target:** `~/roofing-app`, **not** `~/roofing.sydney` — see W3.
 
@@ -90,26 +93,34 @@ same VPS, nginx `roofing.sydney` → `127.0.0.1:3402`, served by a hand-started
 `next-server` (pid 1993359) out of `~/roofing.sydney` with **no pm2 entry and
 no systemd unit** — it does not survive a reboot.
 
-That checkout is 23 commits behind `main` and held ~466 lines of uncommitted
-edits plus 9 untracked files (about/ and contact/ pages, `HouseColourViz`,
-`QuoteForm`, `RoofSwatchViz`, `HeroSlideshow`, `redesign.html`/`redesign.css`,
-6 re-compressed hero JPEGs). **The live site was ahead of `origin/main`.**
+That checkout is 23 commits behind `main` (at `63c5ae6`) with a dirty working
+tree on top. It was snapshotted 2026-08-08 to `rescue/vps-live-site-2026-08-08`
+(commit `eb9d63c`, pushed) before anything else was touched.
 
-Backed up 2026-08-08 to branch `rescue/vps-live-site-2026-08-08` (commit
-`d681107`, branched from the same `63c5ae6` so the diff is exactly what was
-live) and pushed to origin. That work is **not** reviewed or merged.
+**The snapshot turned out to be unnecessary, and the first read of it was
+wrong.** The dirty tree measures 466 lines only against the stale `63c5ae6`.
+Against `main` the live site differs by **4 files, +36/−102**, and every
+difference is `main` being newer — `SiteNav` extracted, `next/link` for raw
+anchors, the `/preview` route, an explicit font stack against a pre-hydration
+serif flash, ~89 lines of `redesign.css` theming. The uncommitted work was an
+earlier draft of changes since committed properly. Nothing exists only on the
+box; there is nothing in the rescue branch to merge. Keep it as a snapshot.
 
-Three things to settle, in order:
+So the live site is **behind** `main`, not ahead, and `git pull` there is safe.
+Verified safe to run `main` on the public host without Supabase: `middleware.ts`
+returns at the `!isCrmHost(host)` branch (line 81) before any Supabase client is
+constructed, so the public site does not need the CRM's env at all.
 
-1. Review the rescue branch and decide what merges into `main`. It was never
-   code-reviewed and predates 23 commits of CRM work; expect conflicts in
-   `src/app/page.tsx`.
-2. Put the public site under supervision — preferably by serving it from the
-   same container as the CRM (add a second vhost; see the comment at the foot
-   of `deploy/nginx/app.roofing.sydney.conf`), which retires the loose
-   `next-server` entirely.
-3. Only then is `git pull` in `~/roofing.sydney` safe. Until then it destroys
-   production state that exists nowhere else on that box.
+What actually needs doing:
+
+1. Bring `~/roofing.sydney` to `origin/main` and rebuild.
+2. Put it under supervision — pm2 or a systemd unit. Best option is to retire
+   the loose `next-server` entirely and serve the public site from the CRM
+   container: add a second vhost per the comment at the foot of
+   `deploy/nginx/app.roofing.sydney.conf`. That waits on W2.
+
+**Not started — this restarts the live marketing site**, so it wants a chosen
+moment rather than being folded into unrelated work.
 
 **Done means:** roofing.sydney serves from a supervised process at a commit
 that exists on `origin/main`, and survives `sudo reboot`.
