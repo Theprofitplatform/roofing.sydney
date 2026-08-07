@@ -19,7 +19,7 @@ const STEPS = [
   {
     n: "04",
     title: "Final handover",
-    body: "Joint inspection, NSW Fair Trading compliance certificate, and 25-year workmanship warranty — all in writing.",
+    body: "Joint inspection, NSW Fair Trading compliance certificate, and 6-year workmanship warranty — all in writing.",
   },
 ];
 

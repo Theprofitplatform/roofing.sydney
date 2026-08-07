@@ -73,7 +73,7 @@ export function HeroBand() {
                 AI roof colour visualiser · Free &amp; instant</span>
             </div>
 
-            <h1 className="font-serif text-5xl font-light leading-[1.06] tracking-tight lg:text-6xl" style={{ color: "var(--hero-ink)" }}>
+            <h1 className="font-serif text-5xl font-light leading-[1.06] tracking-tight lg:text-6xl" style={{ color: "var(--hero-ink)", textWrap: "balance" }}>
               See your roof in a{" "}
               <em className="italic" style={{ color: "#c8443b" }}>new colour</em>{" "}
               before you commit.
@@ -100,7 +100,7 @@ export function HeroBand() {
             </div>
 
             <div className="mt-10 flex gap-8">
-              {[["2,400+", "Sydney roofs since 2008"], ["25yr", "Workmanship warranty"], ["4.9/5", "Google reviews"]].map(([n, l]) => (
+              {[["150+", "Sydney roofs since 2011"], ["6yr", "Workmanship warranty"], ["$20M", "Public liability cover"]].map(([n, l]) => (
                 <div key={l}>
                   <div className="font-serif text-2xl font-semibold" style={{ color: "var(--hero-ink)" }}>{n}</div>
                   <div className="mt-1 text-xs leading-snug" style={{ color: ink3, maxWidth: "14ch" }}>{l}</div>
@@ -132,12 +132,12 @@ export function HeroBand() {
                     sizes="440px"
                     priority
                   />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center" style={{ background: "rgba(0,0,0,0.45)" }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.62) 100%)" }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(241,250,238,0.7)" strokeWidth="1.5" strokeLinecap="round">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
                     </svg>
                     <p className="text-sm font-medium" style={{ color: "#f1faee" }}>Enter your address to see your home.</p>
-                    <p className="text-xs leading-relaxed" style={{ color: "rgba(241,250,238,0.6)", maxWidth: "28ch" }}>We&apos;ll fetch a satellite view and let you repaint the roof in any Colorbond colour.</p>
+                    <p className="text-xs leading-relaxed" style={{ color: "rgba(241,250,238,0.85)", maxWidth: "28ch" }}>We&apos;ll fetch a satellite view and let you repaint the roof in any Colorbond colour.</p>
                   </div>
                 </div>
               )}

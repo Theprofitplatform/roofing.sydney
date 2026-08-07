@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARC — redesign mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f4efe6; --cream-2:#ebe3d6; --paper:#faf7f1;
+    --ink:#16191f; --ink-2:#3a3d44; --ink-3:#6b6d72;
+    --brand:#c8443b; --brand-deep:#a5342c; --olive:#6a6f59; --navy:#141821;
+    --line:rgba(20,25,31,.12); --line-2:rgba(20,25,31,.07);
+    --sans:'Inter',system-ui,sans-serif; --serif:'Fraunces',Georgia,serif;
+    --shadow-lg:0 40px 80px -32px rgba(20,20,20,.45), 0 12px 28px -18px rgba(20,20,20,.4);
+    --shadow-md:0 20px 44px -24px rgba(20,20,20,.32);
+    --r:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);color:var(--ink);background:var(--cream);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+  .serif{font-family:var(--serif)}
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* ── ticker ── */
+  .ticker{background:var(--navy);color:#e9e3d7;font-size:12.5px;letter-spacing:.02em;overflow:hidden;position:relative;z-index:5}
+  .ticker__track{display:flex;gap:48px;white-space:nowrap;padding:9px 0;animation:scroll 34s linear infinite;width:max-content}
+  .ticker span{display:inline-flex;align-items:center;gap:8px;opacity:.85}
+  .ticker b{color:var(--brand)}
+  @keyframes scroll{to{transform:translateX(-50%)}}
+
+  /* ── nav ── */
+  nav{position:sticky;top:0;z-index:40;background:rgba(244,239,230,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-2)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:74px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-weight:600;font-size:19px;box-shadow:0 6px 16px -6px var(--brand)}
+  .nav__links{display:flex;gap:34px;font-size:14.5px;font-weight:500;color:var(--ink-2)}
+  .nav__links a:hover{color:var(--ink)}
+  .nav__cta{display:flex;align-items:center;gap:16px}
+  .phone{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:7px}
+  .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px;border-radius:100px;padding:12px 22px;transition:.2s}
+  .btn--primary{background:var(--brand);color:#fff;box-shadow:0 10px 24px -10px var(--brand)}
+  .btn--primary:hover{background:var(--brand-deep);transform:translateY(-1px)}
+  .btn--ghost{border:1px solid var(--line);color:var(--ink)}
+  .btn--ghost:hover{background:#fff}
+  .btn--big{padding:16px 30px;font-size:15.5px}
+
+  /* ── hero ── */
+  .hero{position:relative;z-index:2;padding:70px 0 40px;
+    background:radial-gradient(120% 90% at 15% 0%,#f7f2e9 0%,#efe6d7 55%,#e7dcc9 100%)}
+  .hero__grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .badge{display:inline-flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:100px;padding:7px 8px 7px 14px;font-size:13px;color:var(--ink-2);box-shadow:var(--shadow-md);font-weight:500}
+  .badge .tag{background:var(--brand);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:100px;text-transform:uppercase}
+  h1{font-family:var(--serif);font-weight:340;font-size:clamp(46px,5.6vw,80px);line-height:1.01;letter-spacing:-.02em;margin:26px 0 0;text-wrap:balance}
+  h1 em{font-style:italic;color:var(--brand)}
+  .hero p.lead{font-size:18px;color:var(--ink-2);max-width:44ch;margin:24px 0 0;line-height:1.6}
+  .hero__actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:34px}
+  .hero__stats{display:flex;gap:40px;margin-top:44px;padding-top:30px;border-top:1px solid var(--line)}
+  .stat b{font-family:var(--serif);font-size:34px;font-weight:600;letter-spacing:-.02em;display:block;line-height:1}
+  .stat span{font-size:12.5px;color:var(--ink-3);display:block;margin-top:7px;max-width:15ch;line-height:1.35}
+
+  /* ── visualiser panel ── */
+  .viz{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative}
+  .viz__bar{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line-2)}
+  .viz__bar .l{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#38b46a;box-shadow:0 0 0 3px rgba(56,180,106,.18)}
+  .pill{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);border-radius:100px;padding:3px 9px}
+  .viz__stage{position:relative;aspect-ratio:16/11;overflow:hidden;margin:6px;border-radius:16px}
+  .viz__stage img{width:100%;height:100%;object-fit:cover}
+  .viz__scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,16,.05) 30%,rgba(10,12,16,.72) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:20px}
+  .viz__tagchip{position:absolute;top:14px;left:14px;background:rgba(20,24,31,.82);color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:100px;backdrop-filter:blur(6px)}
+  .viz__addr{color:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+  .viz__addr svg{opacity:.85}
+  .viz__sub{color:rgba(255,255,255,.82);font-size:12.5px;margin-top:3px}
+  .viz__foot{padding:16px}
+  .viz__foot .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .viz__foot .row .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .sw{border-radius:11px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:.15s;background:#fff;box-shadow:0 2px 6px -3px rgba(0,0,0,.2);padding:0;font:inherit;width:100%;text-align:center}
+  .sw:hover{transform:translateY(-2px);box-shadow:0 6px 14px -6px rgba(0,0,0,.28)}
+  .sw.active{border-color:var(--brand)}
+  .sw .chip{display:block;height:34px}
+  #vizImg{transition:opacity .25s ease}
+  .sw .nm{font-size:10px;font-weight:600;text-align:center;padding:5px 2px;color:var(--ink-2)}
+  .floaty{position:absolute;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-md);padding:11px 15px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:9px;z-index:3}
+  .floaty .ic{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center}
+  .floaty--tl{top:150px;left:-26px}
+  .floaty--br{top:300px;right:-26px}
+  .floaty small{display:block;font-weight:500;color:var(--ink-3);font-size:11px}
+
+  /* ── section frame ── */
+  section.blk{position:relative;z-index:2;padding:96px 0}
+  .shead{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:44px}
+  .shead h2{font-family:var(--serif);font-weight:360;font-size:clamp(32px,3.6vw,50px);line-height:1.04;letter-spacing:-.02em;text-wrap:balance}
+  .shead h2 em{font-style:italic;color:var(--brand)}
+  .shead p{color:var(--ink-2);font-size:15.5px;max-width:40ch;line-height:1.6}
+  .num{font-family:var(--serif);color:var(--brand);font-size:14px;font-weight:600;letter-spacing:.05em;margin-bottom:14px;display:block}
+
+  /* ── bento services ── */
+  .bento{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:230px;gap:18px}
+  .card{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line-2);background:#fff;box-shadow:var(--shadow-md);transition:.25s}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+  .card--wide{grid-column:span 2}
+  .card--tall{grid-row:span 2}
+  .card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .card__scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,17,22,.05) 35%,rgba(15,17,22,.86) 100%)}
+  .card__body{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:24px;color:#fff}
+  .card__body h3{font-family:var(--serif);font-size:23px;font-weight:500;letter-spacing:-.01em}
+  .card__body p{font-size:13.5px;color:rgba(255,255,255,.8);margin-top:7px;max-width:34ch;line-height:1.5}
+  .card__link{margin-top:14px;font-size:13px;font-weight:600;color:#fff;display:inline-flex;align-items:center;gap:6px}
+  .card--flat{background:var(--navy);color:#fff;box-shadow:var(--shadow-md)}
+  .card--flat .card__body{position:relative;color:#fff}
+  .card--flat h3{color:#fff}
+
+  /* ── process ── */
+  .proc{background:var(--paper);border-radius:28px;border:1px solid var(--line-2);padding:56px;box-shadow:var(--shadow-md)}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:8px}
+  .step{padding:0 26px;border-left:1px solid var(--line);position:relative}
+  .step:first-child{padding-left:0;border-left:none}
+  .step .n{width:38px;height:38px;border-radius:11px;background:var(--brand);color:#fff;font-family:var(--serif);font-weight:600;display:grid;place-items:center;margin-bottom:16px;box-shadow:0 8px 18px -8px var(--brand)}
+  .step h4{font-size:16px;font-weight:600;margin-bottom:8px}
+  .step p{font-size:13.5px;color:var(--ink-2);line-height:1.55}
+
+  /* ── proof band ── */
+  .proof{background:var(--navy);color:#f2ede2;border-radius:28px;padding:60px 56px;position:relative;overflow:hidden}
+  .proof::after{content:"";position:absolute;right:-80px;top:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(200,68,59,.35),transparent 70%)}
+  .proof__grid{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:center;position:relative;z-index:2}
+  .proof .quote{font-family:var(--serif);font-size:27px;font-weight:340;line-height:1.34;letter-spacing:-.01em}
+  .proof .quote em{color:#ff8a7d;font-style:italic}
+  .proof__who{display:flex;align-items:center;gap:13px;margin-top:26px}
+  .proof__who .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--brand),#e07a4d);display:grid;place-items:center;font-weight:700;color:#fff;font-size:17px}
+  .proof__who b{font-size:14.5px}.proof__who span{font-size:12.5px;color:rgba(242,237,226,.6);display:block}
+  .stars{color:#ffb14e;letter-spacing:3px;font-size:15px;margin-bottom:16px}
+  .proof__stats{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+  .pstat b{font-family:var(--serif);font-size:44px;font-weight:600;display:block;line-height:1;letter-spacing:-.02em}
+  .pstat span{font-size:13px;color:rgba(242,237,226,.62);margin-top:9px;display:block;line-height:1.4}
+
+  /* ── final cta ── */
+  .final{position:relative;z-index:2;padding:20px 0 110px}
+  .final__box{background:radial-gradient(120% 140% at 80% 0%,#fff 0%,#f6efe4 100%);border:1px solid var(--line);border-radius:28px;padding:64px;box-shadow:var(--shadow-lg);display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .final h2{font-family:var(--serif);font-weight:360;font-size:clamp(34px,3.8vw,52px);line-height:1.03;letter-spacing:-.02em;text-wrap:balance}
+  .final h2 em{font-style:italic;color:var(--brand)}
+  .checks{margin-top:26px;display:grid;gap:13px}
+  .checks li{list-style:none;display:flex;gap:11px;align-items:center;font-size:14.5px;color:var(--ink-2)}
+  .checks .ck{width:22px;height:22px;border-radius:50%;background:rgba(200,68,59,.12);color:var(--brand);display:grid;place-items:center;flex:none}
+  .form{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow-md)}
+  .form .fg{margin-bottom:14px}
+  .form label{font-size:12px;font-weight:600;color:var(--ink-2);display:block;margin-bottom:6px}
+  .form input,.form select{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-family:inherit;font-size:14px;background:var(--paper);color:var(--ink)}
+  .form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form .btn{width:100%;justify-content:center;margin-top:6px}
+  .form .fine{font-size:11.5px;color:var(--ink-3);text-align:center;margin-top:12px}
+
+  /* ── footer ── */
+  footer{background:var(--navy);color:#cfc9bd;position:relative;z-index:2;padding:64px 0 34px}
+  .foot{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px}
+  .foot h5{color:#fff;font-size:13px;font-weight:600;letter-spacing:.04em;margin-bottom:16px}
+  .foot a{display:block;font-size:13.5px;margin-bottom:10px;color:rgba(207,201,189,.8)}
+  .foot a:hover{color:#fff}
+  .foot .brand{color:#fff;margin-bottom:14px}
+  .foot p{font-size:13px;color:rgba(207,201,189,.6);line-height:1.6;max-width:32ch}
+  .foot__bot{border-top:1px solid rgba(255,255,255,.1);margin-top:44px;padding-top:22px;display:flex;justify-content:space-between;font-size:12px;color:rgba(207,201,189,.55)}
+
+  @media(max-width:900px){
+    .wrap{padding:0 20px}
+    .nav__links,.phone{display:none}
+    .hero__grid,.proof__grid,.final__box{grid-template-columns:1fr;gap:36px}
+    .hero{padding:44px 0 20px}
+    .floaty{display:none}
+    .bento{grid-template-columns:1fr;grid-auto-rows:200px}
+    .card--wide,.card--tall{grid-column:span 1;grid-row:span 1}
+    .steps{grid-template-columns:1fr 1fr;gap:28px 0}
+    .step{border-left:none;padding:0 14px 0 0}
+    .proc,.proof,.final__box{padding:32px}
+    .proof__stats{gap:22px}
+    .foot{grid-template-columns:1fr 1fr;gap:30px}
+    .hero__stats{gap:24px}
+    section.blk{padding:64px 0}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- ticker -->
+<div class="ticker"><div class="ticker__track">
+  <span><b>✓</b> NSW Fair Trading Licensed · 245723C</span><span><b>✓</b> BlueScope Colorbond® Accredited Installer</span><span><b>✓</b> $20M Public Liability (Hollard)</span><span><b>✓</b> NSW Home Warranty Insured</span><span><b>✓</b> 6-Year Workmanship Warranty</span>
+  <span><b>✓</b> NSW Fair Trading Licensed · 245723C</span><span><b>✓</b> BlueScope Colorbond® Accredited Installer</span><span><b>✓</b> $20M Public Liability (Hollard)</span><span><b>✓</b> NSW Home Warranty Insured</span><span><b>✓</b> 6-Year Workmanship Warranty</span>
+</div></div>
+
+<!-- nav -->
+<nav><div class="wrap nav">
+  <div class="brand"><span class="mark">A</span> Australian Roofing Contractors</div>
+  <div class="nav__links"><a href="#">Services</a><a href="#">Visualiser</a><a href="#">Process</a><a href="#">Areas</a><a href="#">About</a></div>
+  <div class="nav__cta">
+    <span class="phone"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>02 8103 4001</span>
+    <a class="btn btn--primary" href="#quote">Free quote</a>
+  </div>
+</div></nav>
+
+<!-- hero -->
+<header class="hero"><div class="wrap hero__grid">
+  <div>
+    <span class="badge"><span class="tag">New</span> AI roof colour visualiser · free &amp; instant</span>
+    <h1>See your roof in a<br><em>new colour</em> before you commit.</h1>
+    <p class="lead">Sydney's trusted metal roofing specialists — Colorbond re-roofing, leak repairs and gutters. Drop your address, see your home from satellite, and repaint the roof in any Colorbond shade.</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary btn--big" href="#">Try the visualiser <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+      <a class="btn btn--ghost btn--big" href="#">Book an inspection</a>
+    </div>
+    <div class="hero__stats">
+      <div class="stat"><b>150+</b><span>Sydney roofs since 2011</span></div>
+      <div class="stat"><b>6yr</b><span>Workmanship warranty</span></div>
+      <div class="stat"><b>$20M</b><span>Public liability cover</span></div>
+      <div class="stat"><b>4.9★</b><span>Across 80+ reviews</span></div>
+    </div>
+  </div>
+
+  <div style="position:relative">
+    <div class="floaty floaty--tl"><span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg></span><div>Fixed-price quote<small>In writing, within 48h</small></div></div>
+    <div class="floaty floaty--br"><span class="ic" style="background:var(--olive)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span><div>22 Colorbond shades<small>Ultra &amp; Matt finishes</small></div></div>
+    <div class="viz">
+      <div class="viz__bar"><div class="l"><span class="dot"></span> Sydney Roofing · live preview</div><span class="pill">Beta</span></div>
+      <div class="viz__stage">
+        <img id="vizImg" src="https://roofing.theprofitplatform.com.au/images/titanium-zinc-manor-red.jpeg" alt="Home with Manor Red Colorbond roof">
+        <span class="viz__tagchip" id="vizTag">Manor Red · preview</span>
+        <div class="viz__scrim">
+          <div class="viz__addr"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> 12 Bronte Rd, Bondi Junction NSW</div>
+          <div class="viz__sub">Satellite view · roof recoloured in real time</div>
+        </div>
+      </div>
+      <div class="viz__foot">
+        <div class="row"><span class="k">All colours</span><span class="k" style="color:var(--ink-3)">6 of 22 shades</span></div>
+        <div class="swatches" id="swatches">
+          <button type="button" class="sw" data-name="Current" data-img="titanium-zinc-hero.jpeg"><span class="chip" style="background:#7A7975"></span><span class="nm">Current</span></button>
+          <button type="button" class="sw" data-name="Basalt" data-img="titanium-zinc-basalt.jpeg"><span class="chip" style="background:#3B3B3B"></span><span class="nm">Basalt</span></button>
+          <button type="button" class="sw" data-name="Surfmist" data-img="titanium-zinc-surfmist.jpeg"><span class="chip" style="background:#EFECE1"></span><span class="nm">Surfmist</span></button>
+          <button type="button" class="sw active" data-name="Manor Red" data-img="titanium-zinc-manor-red.jpeg"><span class="chip" style="background:#9D4236"></span><span class="nm">Manor Red</span></button>
+          <button type="button" class="sw" data-name="Woodland" data-img="titanium-zinc-woodland.jpeg"><span class="chip" style="background:#4C5457"></span><span class="nm">Woodland</span></button>
+          <button type="button" class="sw" data-name="Jasper" data-img="titanium-zinc-jasper.jpeg"><span class="chip" style="background:#6A6F59"></span><span class="nm">Jasper</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></header>
+
+<!-- services bento -->
+<section class="blk"><div class="wrap">
+  <div class="shead">
+    <div><span class="num">01 — Services</span><h2>Roofing done the <em>Sydney way.</em></h2></div>
+    <p>Metal roofing built for Australian conditions — cyclonic wind zones, UV extremes, bushfire overlay, and salt spray off the coast.</p>
+  </div>
+  <div class="bento">
+    <div class="card card--wide card--tall">
+      <img src="https://roofing.theprofitplatform.com.au/images/metal-install-1.jpg" alt="Colorbond re-roofing install">
+      <div class="card__scrim"></div>
+      <div class="card__body">
+        <h3>Colorbond re-roofing</h3>
+        <p>Full metal roof replacements in Colorbond® steel. All 22 colours plus Ultra &amp; Matt finishes — matched to your home and climate zone.</p>
+        <span class="card__link">Get a Colorbond quote →</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="https://roofing.theprofitplatform.com.au/images/metal-install-2.jpg" alt="Leak detection">
+      <div class="card__scrim"></div>
+      <div class="card__body"><h3>Leak detection</h3><p>Thermal-imaging diagnostics, same-week response.</p></div>
+    </div>
+    <div class="card">
+      <img src="https://roofing.theprofitplatform.com.au/images/galvalume-install.jpg" alt="Gutters and downpipes">
+      <div class="card__scrim"></div>
+      <div class="card__body"><h3>Gutters &amp; downpipes</h3><p>Leaf-guard systems, colour-matched.</p></div>
+    </div>
+    <div class="card card--flat">
+      <div class="card__body">
+        <span class="num" style="margin-bottom:10px">Also</span>
+        <h3>Standing seam &amp; commercial</h3>
+        <p style="color:rgba(255,255,255,.7)">Architectural zinc, copper &amp; aluminium. Strata and commercial roofing across Greater Sydney.</p>
+        <span class="card__link">Talk to us →</span>
+      </div>
+    </div>
+    <div class="card card--wide">
+      <img src="https://roofing.theprofitplatform.com.au/images/titanium-zinc-top-view.jpeg" alt="Roof top view">
+      <div class="card__scrim"></div>
+      <div class="card__body"><h3>Drone survey &amp; report</h3><p>Every job starts with an aerial survey and a documented condition report — no ladders, no guesswork.</p></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- process -->
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="proc">
+    <div class="shead" style="margin-bottom:34px">
+      <div><span class="num">02 — Process</span><h2>From <em>first call</em> to final tile.</h2></div>
+      <p>Every job runs the same way — a fixed-price quote in writing, one project manager start to finish.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h4>On-site consult</h4><p>Senior roofer visit within 5 days. Drone survey, thermal scan, timber check — all included.</p></div>
+      <div class="step"><div class="n">2</div><h4>Fixed-price quote</h4><p>In writing within 48 hours. No provisional sums, no surprises. We show exactly what's replaced.</p></div>
+      <div class="step"><div class="n">3</div><h4>Installation</h4><p>Most homes finish in 3–5 days. Daily site photos sent straight to your phone.</p></div>
+      <div class="step"><div class="n">4</div><h4>Final handover</h4><p>Joint inspection, NSW Fair Trading certificate, and 6-year workmanship warranty — in writing.</p></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- proof -->
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="proof"><div class="proof__grid">
+    <div>
+      <div class="stars">★★★★★</div>
+      <div class="quote">"They repainted our roof in the visualiser before we signed anything — we picked <em>Woodland</em> on the spot. Job finished in four days, site spotless, price didn't move a dollar."</div>
+      <div class="proof__who"><span class="av">RK</span><div><b>Rachel K.</b><span>Randwick · Colorbond re-roof, 2025</span></div></div>
+    </div>
+    <div class="proof__stats">
+      <div class="pstat"><b>150+</b><span>Sydney roofs since 2011</span></div>
+      <div class="pstat"><b>4.9★</b><span>80+ Google reviews</span></div>
+      <div class="pstat"><b>48h</b><span>Quote turnaround, in writing</span></div>
+      <div class="pstat"><b>$0</b><span>Deposit to get a quote</span></div>
+    </div>
+  </div></div>
+</div></section>
+
+<!-- final cta -->
+<section class="final" id="quote"><div class="wrap">
+  <div class="final__box">
+    <div>
+      <span class="num">03 — Get a free quote</span>
+      <h2>Honest pricing, <em>in writing,</em> within 48 hours.</h2>
+      <ul class="checks">
+        <li><span class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> Site inspection within 5 working days</li>
+        <li><span class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> Written fixed-price quote — no provisional sums</li>
+        <li><span class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> Zero obligation, no deposit to quote</li>
+        <li><span class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> 6-year workmanship warranty (25-yr materials)</li>
+      </ul>
+    </div>
+    <form class="form" onsubmit="return false">
+      <div class="two"><div class="fg"><label>Your name</label><input placeholder="Alex Chen"></div><div class="fg"><label>Phone</label><input placeholder="0412 345 678"></div></div>
+      <div class="fg"><label>Property address</label><input placeholder="12 Bronte Rd, Bondi Junction NSW"></div>
+      <div class="fg"><label>Service needed</label><select><option>Colorbond re-roofing</option><option>Leak detection &amp; repairs</option><option>Gutters &amp; downpipes</option><option>Standing seam / commercial</option></select></div>
+      <button class="btn btn--primary">Request my free quote →</button>
+      <div class="fine">No obligation · no deposit · quoted within 48 hours</div>
+    </form>
+  </div>
+</div></section>
+
+<!-- footer -->
+<footer><div class="wrap">
+  <div class="foot">
+    <div>
+      <div class="brand" style="display:flex;align-items:center;gap:11px;font-weight:700"><span class="mark">A</span> Australian Roofing Contractors</div>
+      <p>Sydney metal roofing specialists since 2011. Colorbond &amp; standing seam re-roofing, leak repairs and gutters — built for Australian conditions.</p>
+    </div>
+    <div><h5>Services</h5><a href="#">Colorbond re-roofing</a><a href="#">Leak detection</a><a href="#">Gutters &amp; downpipes</a><a href="#">Standing seam</a><a href="#">Commercial</a></div>
+    <div><h5>Company</h5><a href="#">About</a><a href="#">Visualiser</a><a href="#">Service areas</a><a href="#">Contact</a></div>
+    <div><h5>Get in touch</h5><a href="#">02 8103 4001</a><a href="#">hello@roofing.sydney</a><a href="#">Eastern Suburbs · Inner West · St George</a></div>
+  </div>
+  <div class="foot__bot"><span>© 2026 Australian Roofing Contractors Pty Ltd · NSW Fair Trading Lic. 245723C</span><span>ABN 59 148 109 399</span></div>
+</div></footer>
+
+<script>
+(function(){
+  var BASE = 'https://roofing.theprofitplatform.com.au/images/';
+  var img = document.getElementById('vizImg');
+  var tag = document.getElementById('vizTag');
+  document.getElementById('swatches').addEventListener('click', function(e){
+    var btn = e.target.closest('.sw'); if(!btn) return;
+    document.querySelectorAll('.sw').forEach(function(s){ s.classList.remove('active'); });
+    btn.classList.add('active');
+    var name = btn.getAttribute('data-name');
+    img.style.opacity = '0';
+    var next = new Image();
+    next.onload = function(){ img.src = next.src; img.style.opacity = '1'; };
+    next.src = BASE + btn.getAttribute('data-img');
+    tag.textContent = name + ' · preview';
+    img.alt = 'Home with ' + name + ' Colorbond roof';
+  });
+})();
+</script>
+</body>
+</html>
