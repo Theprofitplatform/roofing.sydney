@@ -50,12 +50,27 @@ storage → mail → portal → `viewed_at` → accept → job.
 
 ### W2 — First VPS deploy of app.roofing.sydney
 
-**Status:** BLOCKED (on W1 — no point deploying against no database) — claude 2026-08-07
+**Status:** BLOCKED (on W1 — `deploy.sh` hard-refuses without real Supabase keys) — claude 2026-08-08
 **Spec:** `deploy/README.md`
 
-First run of `./scripts/deploy.sh` on the VPS; also the first real test of the
-Dockerfile, which has never been built. Then the nginx vhost
-(`deploy/nginx/app.roofing.sydney.conf`), then certbot once DNS resolves.
+Everything around the container is now done and verified (2026-08-08):
+
+- DNS `A app.roofing.sydney → 31.97.222.218`, **DNS-only/grey cloud** (zone
+  `676dca309fb89a9da458ab972ca98e21`). Resolves on 1.1.1.1 / 8.8.8.8 / 9.9.9.9.
+- nginx vhost enabled, `nginx -t` clean, reloaded; `roofing.sydney` unaffected
+  (still 200 through Cloudflare after the reload).
+- TLS issued by Let's Encrypt, expires 2026-11-05, auto-renew scheduled.
+  `http://` → 301 → `https://`, and `https://` answers **502** — correct, there
+  is no container behind it yet.
+- Port 9030 confirmed free; Docker 29.6.1 / Compose v5.3.1 present; 178 G free.
+
+What remains is only `./scripts/deploy.sh`, and it cannot run yet: lines 32–34
+`fail` if `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` are
+missing or empty from `.env.production`. Do **not** work around that guard with
+placeholder values — middleware constructs a Supabase client at request time,
+so a bogus URL breaks the host split rather than degrading gracefully.
+
+**Clone target:** `~/roofing-app`, **not** `~/roofing.sydney` — see W3.
 
 **Trap:** `NEXT_PUBLIC_*` values must be passed as Docker **build args**, not
 just runtime env — they are inlined into the client and middleware bundles at
@@ -64,6 +79,40 @@ every CRM request 503s.
 
 **Done means:** `curl https://app.roofing.sydney/api/health` returns healthy
 and `/login` renders, with `roofing.sydney` unchanged.
+
+### W3 — Reconcile the live public site with git, and supervise it
+
+**Status:** TODO — raised by claude 2026-08-08
+**Spec:** `deploy/README.md` § "How the public site is actually served"
+
+`deploy/README.md` claimed the public site was on Vercel. It is not: it is this
+same VPS, nginx `roofing.sydney` → `127.0.0.1:3402`, served by a hand-started
+`next-server` (pid 1993359) out of `~/roofing.sydney` with **no pm2 entry and
+no systemd unit** — it does not survive a reboot.
+
+That checkout is 23 commits behind `main` and held ~466 lines of uncommitted
+edits plus 9 untracked files (about/ and contact/ pages, `HouseColourViz`,
+`QuoteForm`, `RoofSwatchViz`, `HeroSlideshow`, `redesign.html`/`redesign.css`,
+6 re-compressed hero JPEGs). **The live site was ahead of `origin/main`.**
+
+Backed up 2026-08-08 to branch `rescue/vps-live-site-2026-08-08` (commit
+`d681107`, branched from the same `63c5ae6` so the diff is exactly what was
+live) and pushed to origin. That work is **not** reviewed or merged.
+
+Three things to settle, in order:
+
+1. Review the rescue branch and decide what merges into `main`. It was never
+   code-reviewed and predates 23 commits of CRM work; expect conflicts in
+   `src/app/page.tsx`.
+2. Put the public site under supervision — preferably by serving it from the
+   same container as the CRM (add a second vhost; see the comment at the foot
+   of `deploy/nginx/app.roofing.sydney.conf`), which retires the loose
+   `next-server` entirely.
+3. Only then is `git pull` in `~/roofing.sydney` safe. Until then it destroys
+   production state that exists nowhere else on that box.
+
+**Done means:** roofing.sydney serves from a supervised process at a commit
+that exists on `origin/main`, and survives `sudo reboot`.
 
 ---
 

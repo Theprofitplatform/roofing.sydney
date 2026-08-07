@@ -6,19 +6,29 @@ renders the public marketing site.
 
 ## First-time setup on the VPS
 
+⚠ **`~/roofing.sydney` on the VPS is not a spare checkout — it is what serves
+the live public site.** See "How the public site is actually served" below.
+Clone the CRM somewhere else and never run `git pull` in that directory.
+
+Steps 2, 4 and 5 were completed on 2026-08-08 — DNS resolves, the vhost is
+enabled, and TLS is issued. Only steps 1 and 3 remain, and step 3 is blocked
+until Supabase exists (`deploy.sh` refuses to run without real keys).
+
 ```bash
-# 1. Clone and configure
-git clone https://github.com/Theprofitplatform/roofing.sydney.git
-cd roofing.sydney
+# 1. Clone and configure — NOT into ~/roofing.sydney, which is the live site
+git clone https://github.com/Theprofitplatform/roofing.sydney.git ~/roofing-app
+cd ~/roofing-app
 cp .env.example .env.production   # then fill it in — see "Environment" below
 
-# 2. Point DNS at the box
-#    A  app.roofing.sydney  →  <VPS IP>
+# 2. Point DNS at the box                                    [DONE 2026-08-08]
+#    A  app.roofing.sydney  →  31.97.222.218, DNS-only (grey cloud).
+#    Grey-clouded deliberately: certbot's HTTP-01 challenge reaches the origin
+#    directly. The apex stays orange-clouded.
 
 # 3. Build and start
 ./scripts/deploy.sh
 
-# 4. Wire nginx (verify the port is actually free first)
+# 4. Wire nginx (verify the port is actually free first)      [DONE 2026-08-08]
 sudo ss -ltnp | grep 9030
 curl -sS http://127.0.0.1:9030/api/health
 
@@ -27,9 +37,12 @@ sudo ln -s /etc/nginx/sites-available/app.roofing.sydney.conf \
            /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 
-# 5. TLS — run only after DNS resolves
-sudo certbot --nginx -d app.roofing.sydney
+# 5. TLS — run only after DNS resolves                        [DONE 2026-08-08]
+sudo certbot --nginx -d app.roofing.sydney   # expires 2026-11-05, auto-renews
 ```
+
+Until step 3 runs, `https://app.roofing.sydney` answers **502** — nginx is up
+and holding the hostname, but there is no container behind it yet.
 
 ## Subsequent deploys
 
@@ -91,6 +104,30 @@ docker compose up -d
 - Health endpoint is deliberately dependency-free: it reports that Node is
   serving, not that Supabase is reachable. A liveness probe that fails on a
   third-party outage restarts a healthy container.
-- The public site currently deploys to Vercel. Moving it onto this container is
-  a matter of adding a second nginx vhost — see the comment at the foot of
-  `deploy/nginx/app.roofing.sydney.conf`.
+- Moving the public site onto this container is a matter of adding a second
+  nginx vhost — see the comment at the foot of
+  `deploy/nginx/app.roofing.sydney.conf`, and the section below first.
+
+## How the public site is actually served
+
+Not by Vercel — this document claimed that until 2026-08-08 and it was wrong.
+
+`roofing.sydney` (A → `31.97.222.218`, Cloudflare-proxied) resolves to this
+same VPS. nginx vhost `roofing.sydney` proxies to `127.0.0.1:3402`, which is a
+bare `next-server` process started by hand out of `~/roofing.sydney`. Three
+things follow, none of them good:
+
+- **Nothing supervises it.** No pm2 entry, no systemd unit. It does not come
+  back after a reboot or a crash.
+- **That checkout is 23 commits behind `main`** and carries ~466 lines of
+  uncommitted edits plus 9 untracked files — the about/ and contact/ pages,
+  `HouseColourViz`, `QuoteForm`, `RoofSwatchViz`, `HeroSlideshow`. The live
+  site is *ahead* of `origin/main` in content.
+- **`git pull` there destroys that work.** It is preserved on branch
+  `rescue/vps-live-site-2026-08-08` (commit `d681107`), taken 2026-08-08, but
+  it has not been reviewed or reconciled with `main`.
+
+Reconciling that branch and putting the public site under supervision — ideally
+onto this same container, which is what the vhost comment describes — is
+tracked as W3 in `.planning/TRACKER.md`. Until then, treat `~/roofing.sydney`
+on the VPS as production state, not as a working copy.
