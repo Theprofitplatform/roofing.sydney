@@ -14,8 +14,10 @@ step that needs a human with an account.
 1. Create a project in the **Sydney** region (`ap-southeast-2`). Data about NSW
    homeowners should not leave the country without a reason.
 2. SQL editor → run in order:
-   `supabase/migrations/0001` … `0014`, then `supabase/seed.sql`.
+   `supabase/migrations/0001` … `0015`, then `supabase/seed.sql`.
    Every file is idempotent; re-running changes nothing.
+   `0015` is not optional — without it the first quote you issue fails with
+   `function gen_random_bytes(integer) does not exist`.
 3. `0014` creates the private `quotes` bucket for you. Confirm it exists and is
    **not** public — see `supabase/README.md` for why that matters.
 4. Auth → Providers → enable **Email**. Sign in once as John so the
