@@ -21,8 +21,7 @@ export default function LoginPage() {
         </span>
         <h1>Australian Roofing Contractors</h1>
         <p className="crm-login__sub">
-          Internal quoting. Enter your email and we&rsquo;ll send a sign-in link &mdash;
-          no password to remember.
+          Internal quoting. Sign in with your email and password.
         </p>
         <Suspense fallback={null}>
           <LoginForm />

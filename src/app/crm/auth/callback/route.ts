@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { publicOrigin } from "@/lib/public-origin";
+import { safeNextPath } from "@/lib/safe-next-path";
 
 /**
  * Magic-link landing. Supabase redirects here with a PKCE `code`, which we
@@ -13,10 +14,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const origin = publicOrigin(request);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
-
-  // Only ever redirect to a path on this origin — never an attacker-supplied host.
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safeNext = safeNextPath(searchParams.get("next"));
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`);
