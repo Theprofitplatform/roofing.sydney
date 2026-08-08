@@ -31,26 +31,44 @@ Check what's held at any time: `bash .planning/scripts/tracker-lock.sh status`. 
 
 ## Active
 
-### W1 — Provision Supabase for the CRM
+### W4 — Migrate off base onto a production Supabase (public, Sydney region)
 
-**Status:** BLOCKED (needs the account holder — no Supabase project exists) — claude 2026-08-07
+**Status:** TODO (no longer blocking — base is serving production via `db.roofing.sydney`) — claude 2026-08-08
 **Spec:** `docs/crm-runbook.md` §1
 
-The CRM is merged to `main` (PR #2, merge commit `9389477`) but has never run
-against a live database. Provisioning is the only thing between here and a
-working CRM. Steps, in order: run migrations `0001`→`0014`, then `seed.sql`,
-then confirm the private `quotes` storage bucket exists (`0014` creates it if
-the `storage` schema is present), then turn off email signups after John's
-first sign-in.
+W1 proved the schema and the whole spine against a real database, but on a
+self-hosted instance on `base` that only Tailscale could reach.
 
-**Done means:** the whole spine driven in one go — build a quote from a
-template, issue it, open the portal link from the email in a private window,
-accept it, confirm a job appears. That single path exercises issue → PDF →
-storage → mail → portal → `viewed_at` → accept → job.
+The constraint was structural: `NEXT_PUBLIC_SUPABASE_URL` is read by the
+**browser** — `login-form.tsx` calls `signInWithOtp` client-side — so the
+database URL must resolve for whoever signs in. On 2026-08-08 that was resolved
+by **publishing base rather than waiting for a cloud project** (the user chose
+this explicitly): `db.roofing.sydney` fronts base's Kong over Tailscale from the
+VPS, with TLS. See `deploy/nginx/db.roofing.sydney.conf`.
+
+**So the CRM is live on a development database that lives on a home LAN
+machine.** That is the accepted trade-off, not an oversight, but it carries
+real exposure that this item exists to retire:
+
+- If `base` sleeps, reboots or loses its link, every CRM request that touches
+  the database fails. There is no failover and no alerting.
+- Backups are whatever base has, which is nothing deliberate.
+- Real client data — John's quotes, customer names and addresses — now lands
+  there.
+
+Steps once an account exists: create in `ap-southeast-2`, run migrations
+`0001`→`0015` then `seed.sql`, confirm the private `quotes` bucket, enable email
+auth, sign John in once, then disable signups. Then repoint
+`NEXT_PUBLIC_SUPABASE_URL` in `~/roofing-app/.env.production` on the VPS,
+**rebuild** (it is a build arg, not runtime env), migrate any data that
+accumulated on base, and retire the `db.roofing.sydney` vhost.
+
+**Done means:** the W1 spine driven again against that database, from a browser
+that is not on the Tailnet, with base no longer in the request path.
 
 ### W2 — First VPS deploy of app.roofing.sydney
 
-**Status:** BLOCKED (on W1 — `deploy.sh` hard-refuses without real Supabase keys) — claude 2026-08-08
+**Status:** BLOCKED (on W4 — needs a database the public internet can reach; base's is Tailscale-only) — claude 2026-08-08
 **Spec:** `deploy/README.md`
 
 Everything around the container is now done and verified (2026-08-08):
@@ -128,6 +146,50 @@ that exists on `origin/main`, and survives `sudo reboot`.
 ---
 
 ## Done log (newest first)
+
+### W1 — Stand the CRM up against a real database
+
+**Status:** DONE (2026-08-08, verified end to end) — claude
+**Scope note:** delivered on `base`, not on cloud Supabase. Production still
+needs W4.
+
+Self-hosted Supabase (upstream `supabase/docker`, 11 containers) at
+`~/stacks/roofing-supabase` on `base`, gateway `http://100.69.167.68:8000`.
+Every published port is pinned to the Tailscale address via
+`docker-compose.override.yml` — nothing is reachable from the LAN or the public
+internet. Migrations `0001`→`0015` and `seed.sql` applied clean: 20 tables, 72
+RLS policies, private `quotes` bucket, settings seeded. Signups disabled; the
+operator user was created through the admin API and `on_auth_user_created`
+provisioned `public.users` with role `owner`.
+
+App deployed from the same repo via `./scripts/deploy.sh` — the **first ever
+build of the Dockerfile** — healthy on commit `b3fff89` at
+`http://100.69.167.68:9030`.
+
+Verified, not assumed:
+
+- Sign-in end to end through the app's own `@supabase/ssr` client: PKCE
+  `signInWithOtp` → magic link → `/auth/callback` exchange → dashboard 200.
+- All 10 CRM routes 200. Host split correct: public host serves the marketing
+  site and 404s `/crm/*`; CRM host redirects to `/login` signed out.
+- The full spine on one quote — draft → PDF → issue → portal → `viewed_at` →
+  accept → job. Q-2026-0009, $18,801.60, job scheduled, all four visible in the
+  CRM UI.
+- `/api/quotes/[id]/pdf` returns a real `%PDF` from inside the container, which
+  clears the `serverExternalPackages` risk the Dockerfile flags.
+
+**Found and fixed a production blocker:** `issue_quote` is `security definer set
+search_path = public` but mints its portal token with `gen_random_bytes()`,
+which pgcrypto owns in the `extensions` schema. Every quote issue failed with
+`function gen_random_bytes(integer) does not exist`. This was **not** a
+self-hosting artefact — cloud Supabase keeps pgcrypto in `extensions` too, so
+the first quote issued in production would have failed the same way. Fixed by
+`0015_issue_quote_pgcrypto.sql`.
+
+**Two things this did not prove**, because both need a real Resend key: the
+quote email to the client, and the lead-form notification. Both go out over
+Resend's HTTP API, so the local mail catcher does not cover them. Sign-in mail
+is covered — a Mailpit container stands in as GoTrue's SMTP host.
 
 ### W0 — Merge the CRM branch to main
 

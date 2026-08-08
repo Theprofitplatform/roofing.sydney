@@ -10,9 +10,9 @@ renders the public marketing site.
 the live public site.** Clone the CRM somewhere else so you do not clone over
 it or restart it by accident. See "How the public site is actually served".
 
-Steps 2, 4 and 5 were completed on 2026-08-08 — DNS resolves, the vhost is
-enabled, and TLS is issued. Only steps 1 and 3 remain, and step 3 is blocked
-until Supabase exists (`deploy.sh` refuses to run without real keys).
+**All five steps were completed on 2026-08-08.** `app.roofing.sydney` is live,
+serving from `~/roofing-app` on the VPS. What follows is the record of how, and
+what to repeat if it is ever rebuilt from scratch.
 
 ```bash
 # 1. Clone and configure — NOT into ~/roofing.sydney, which is the live site
@@ -41,8 +41,26 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d app.roofing.sydney   # expires 2026-11-05, auto-renews
 ```
 
-Until step 3 runs, `https://app.roofing.sydney` answers **502** — nginx is up
-and holding the hostname, but there is no container behind it yet.
+A **502** from `https://app.roofing.sydney` means nginx is up and holding the
+hostname but nothing is listening on 9030 — the container is down or was never
+started. It is not a TLS or DNS fault.
+
+## Where the database lives
+
+`NEXT_PUBLIC_SUPABASE_URL` is **`https://db.roofing.sydney`**, which is not a
+Supabase cloud project. It is an nginx vhost on this same VPS that proxies over
+Tailscale to a self-hosted Supabase on `base` — a machine on a home LAN. See
+`deploy/nginx/db.roofing.sydney.conf` and W4 in `.planning/TRACKER.md`.
+
+Two consequences worth internalising before debugging anything:
+
+- **If `base` is asleep or offline, the CRM's database calls fail** while
+  `/api/health` keeps returning `ok` — the health endpoint is deliberately
+  dependency-free. A healthy container with a broken CRM is the expected shape
+  of that outage, not a contradiction.
+- Only `/auth`, `/rest`, `/realtime`, `/storage` and `/functions` under `/v1`
+  are proxied publicly. Supabase Studio and `/pg/*` return 404 by design;
+  reach Studio over Tailscale at `http://100.69.167.68:8000`.
 
 ## Subsequent deploys
 
