@@ -53,9 +53,16 @@ api() {
 # The admin API has no lookup-by-email, so resolve the id in Postgres. Reading
 # it here also means a typo'd address fails loudly instead of silently creating
 # nothing.
-USER_ID="$(docker compose --project-directory "$STACK_DIR" exec -T db \
+#
+# Run from inside the stack directory rather than passing --project-directory:
+# that flag sets the project root but still resolves the compose file relative
+# to $PWD, and the stack's COMPOSE_FILE (which names the override) only loads
+# from its own .env. Errors are deliberately not silenced — swallowing them
+# here turns a compose misconfiguration into a bare `exit 1` with no output.
+USER_ID="$(cd "$STACK_DIR" && docker compose exec -T db \
     psql -U postgres -d postgres -tAc \
-    "select id from auth.users where email = '${EMAIL//\'/\'\'}'" 2>/dev/null | tr -d '[:space:]')"
+    "select id from auth.users where email = '${EMAIL//\'/\'\'}'" | tr -d '[:space:]')" \
+    || fail "could not reach Postgres in $STACK_DIR — is the Supabase stack up?"
 
 # Build the JSON with a real encoder — a password is exactly the kind of string
 # that contains quotes and backslashes, and hand-rolled interpolation would
