@@ -31,6 +31,50 @@ Check what's held at any time: `bash .planning/scripts/tracker-lock.sh status`. 
 
 ## Active
 
+### W5 — Retire the admin/admin login and raise the password floor
+
+**Status:** TODO (deliberate, requested and confirmed by the user 2026-08-08) — claude 2026-08-08
+
+`admin@roofing.sydney` / `admin` exists and works on the public CRM. This was
+asked for explicitly after the exposure was spelled out, so it is a recorded
+decision, not an accident — but it is the shortest-lived thing in this repo and
+should be treated that way.
+
+Two separate weakenings, and the second is the one that gets forgotten:
+
+1. The account itself — the most-guessed credential pair in existence, on an
+   internet-facing host with no IP restriction, against real client names,
+   addresses and quote values.
+2. **`GOTRUE_PASSWORD_MIN_LENGTH: "5"`** in `~/stacks/roofing-supabase/docker-compose.override.yml`
+   on base, added to make a 5-character password possible at all. It applies to
+   **every account on the instance**, including John's, forever, until changed.
+   Previous value: unset (GoTrue's default of 6).
+
+To undo: delete the user, drop that env block from the override, `docker
+compose up -d auth`. Backup of the override at
+`docker-compose.override.yml.bak-2026-08-08`.
+
+**Done means:** no account signs in with fewer than 8 characters, and the
+override no longer sets a password minimum.
+
+### W6 — Rotate the Supabase service-role key
+
+**Status:** TODO (key disclosed in a session transcript 2026-08-08) — claude 2026-08-08
+
+While debugging `scripts/set-crm-password.sh`, a `bash -x` run printed
+`SERVICE_ROLE_KEY` in full into a Claude Code transcript. The key bypasses RLS
+entirely and `db.roofing.sydney` is publicly reachable, so on its own it is
+full read/write access to the database.
+
+Self-hosted Supabase signs `ANON_KEY` and `SERVICE_ROLE_KEY` with `JWT_SECRET`,
+so rotating means: new `JWT_SECRET`, reissue both keys, restart the stack,
+update `~/roofing-app/.env.production` on the VPS, and **rebuild** — the anon
+key is a Docker build arg, not runtime env, so a restart alone will not pick it
+up. Existing sessions are invalidated.
+
+**Done means:** the disclosed key is rejected by `db.roofing.sydney`, and the
+CRM still signs in against the reissued anon key.
+
 ### W4 — Migrate off base onto a production Supabase (public, Sydney region)
 
 **Status:** TODO (no longer blocking — base is serving production via `db.roofing.sydney`) — claude 2026-08-08
